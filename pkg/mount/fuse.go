@@ -237,7 +237,7 @@ func (n *larkfsNode) ensureData(ctx context.Context) ([]byte, syscall.Errno) {
 		return nil, syscall.EIO
 	}
 
-	n.content.Set(path, data)
+	_ = n.content.Set(path, data)
 	n.mu.Lock()
 	n.cached = data
 	n.mu.Unlock()

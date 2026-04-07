@@ -43,9 +43,9 @@ func TestContentCacheEviction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c.Set("key1", []byte("1234567890"))
-	c.Set("key2", []byte("1234567890"))
-	c.Set("key3", []byte("1234567890"))
+	_ = c.Set("key1", []byte("1234567890"))
+	_ = c.Set("key2", []byte("1234567890"))
+	_ = c.Set("key3", []byte("1234567890"))
 
 	_, ok := c.Get("key1")
 	if ok {

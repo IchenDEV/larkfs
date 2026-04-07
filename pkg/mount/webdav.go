@@ -59,7 +59,7 @@ func (s *WebDAVServer) Close() {
 	if s.srv != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		s.srv.Shutdown(ctx)
+		_ = s.srv.Shutdown(ctx)
 	}
 	s.state.meta.Close()
 }
