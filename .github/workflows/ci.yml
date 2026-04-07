@@ -1,0 +1,72 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v6
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install FUSE (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y fuse3 libfuse3-dev
+      - name: Install FUSE (macOS)
+        if: runner.os == 'macOS'
+        run: brew install macfuse || brew install macos-fuse-t/homebrew-cask/fuse-t || true
+      - run: go test ./... -v -race -count=1
+
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install FUSE deps (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y libfuse3-dev
+      - name: Install FUSE deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install macfuse || true
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build -o larkfs-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/larkfs/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: larkfs-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: larkfs-*

@@ -1,0 +1,142 @@
+package doctype
+
+import (
+	"bytes"
+	"context"
+	"encoding/csv"
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/IchenDEV/larkfs/pkg/cli"
+)
+
+type SheetHandler struct {
+	exec *cli.Executor
+}
+
+func NewSheetHandler(exec *cli.Executor) *SheetHandler {
+	return &SheetHandler{exec: exec}
+}
+
+func (h *SheetHandler) IsDirectory() bool { return true }
+func (h *SheetHandler) Extension() string { return ".sheet" }
+
+func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) {
+	out, err := h.exec.Run(ctx,
+		"sheets", "+info", "--spreadsheet-token", token, "--format", "json")
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Sheets []struct {
+			SheetID string `json:"sheet_id"`
+			Title   string `json:"title"`
+		} `json:"sheets"`
+	}
+	if err := json.Unmarshal(out, &result); err != nil {
+		return nil, err
+	}
+
+	entries := make([]Entry, 0, len(result.Sheets)+1)
+	entries = append(entries, Entry{Name: "_meta.json", Token: token, Type: TypeFile})
+	for _, s := range result.Sheets {
+		entries = append(entries, Entry{
+			Name:  s.Title + ".csv",
+			Token: token + "|" + s.SheetID,
+			Type:  TypeFile,
+		})
+	}
+	return entries, nil
+}
+
+func (h *SheetHandler) Read(ctx context.Context, token string) ([]byte, error) {
+	parts := strings.SplitN(token, "|", 2)
+	if len(parts) != 2 {
+		return h.readMeta(ctx, parts[0])
+	}
+
+	spreadsheetToken, sheetID := parts[0], parts[1]
+	out, err := h.exec.Run(ctx,
+		"sheets", "+read",
+		"--spreadsheet-token", spreadsheetToken,
+		"--range", sheetID,
+		"--format", "json")
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Values [][]any `json:"values"`
+	}
+	if err := json.Unmarshal(out, &result); err != nil {
+		return nil, err
+	}
+	return valuesToCSV(result.Values)
+}
+
+func (h *SheetHandler) Write(ctx context.Context, token string, data []byte) error {
+	parts := strings.SplitN(token, "|", 2)
+	if len(parts) != 2 {
+		return ErrReadOnly
+	}
+
+	rows, err := csvToValues(data)
+	if err != nil {
+		return fmt.Errorf("parse CSV: %w", err)
+	}
+
+	valJSON, _ := json.Marshal(rows)
+	_, err = h.exec.Run(ctx,
+		"sheets", "+write",
+		"--spreadsheet-token", parts[0],
+		"--range", parts[1]+"!A1",
+		"--values", string(valJSON))
+	return err
+}
+
+func (h *SheetHandler) Create(ctx context.Context, _ string, name string, _ []byte) (string, error) {
+	out, err := h.exec.Run(ctx, "sheets", "+create", "--title", name)
+	if err != nil {
+		return "", err
+	}
+	var result struct {
+		Token string `json:"spreadsheet_token"`
+	}
+	if err := json.Unmarshal(out, &result); err != nil {
+		return "", err
+	}
+	return result.Token, nil
+}
+
+func (h *SheetHandler) Delete(ctx context.Context, token string) error {
+	params := cli.JSONParam(map[string]any{"file_token": token, "type": "sheet"})
+	_, err := h.exec.Run(ctx, "drive", "files", "delete", "--params", params)
+	return err
+}
+
+func (h *SheetHandler) readMeta(ctx context.Context, token string) ([]byte, error) {
+	return h.exec.Run(ctx, "sheets", "+info", "--spreadsheet-token", token, "--format", "json")
+}
+
+func valuesToCSV(values [][]any) ([]byte, error) {
+	var buf bytes.Buffer
+	w := csv.NewWriter(&buf)
+	for _, row := range values {
+		record := make([]string, len(row))
+		for i, v := range row {
+			record[i] = fmt.Sprintf("%v", v)
+		}
+		if err := w.Write(record); err != nil {
+			return nil, err
+		}
+	}
+	w.Flush()
+	return buf.Bytes(), w.Error()
+}
+
+func csvToValues(data []byte) ([][]string, error) {
+	r := csv.NewReader(bytes.NewReader(data))
+	return r.ReadAll()
+}
