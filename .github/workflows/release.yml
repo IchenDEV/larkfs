@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  release-linux:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,41 +16,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Install FUSE dev headers
-        run: sudo apt-get install -y libfuse3-dev
       - uses: goreleaser/goreleaser-action@v6
         with:
-          args: release --split --id linux
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release-darwin:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - name: Install macFUSE
-        run: brew install macfuse || true
-      - uses: goreleaser/goreleaser-action@v6
-        with:
-          args: release --split --id darwin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  merge-release:
-    needs: [release-linux, release-darwin]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: goreleaser/goreleaser-action@v6
-        with:
-          args: continue --merge
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

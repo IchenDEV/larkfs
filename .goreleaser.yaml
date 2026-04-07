@@ -2,25 +2,11 @@ version: 2
 project_name: larkfs
 
 builds:
-  - id: linux
-    main: ./cmd/larkfs/
+  - main: ./cmd/larkfs/
     binary: larkfs
     env:
       - CGO_ENABLED=0
-    goos: [linux]
-    goarch: [amd64, arm64]
-    ldflags:
-      - -s -w
-      - -X main.version={{.Version}}
-      - -X main.commit={{.ShortCommit}}
-      - -X main.date={{.Date}}
-
-  - id: darwin
-    main: ./cmd/larkfs/
-    binary: larkfs
-    env:
-      - CGO_ENABLED=1
-    goos: [darwin]
+    goos: [linux, darwin]
     goarch: [amd64, arm64]
     ldflags:
       - -s -w
