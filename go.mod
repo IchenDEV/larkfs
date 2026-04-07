@@ -1,6 +1,6 @@
 module github.com/IchenDEV/larkfs
 
-go 1.26.1
+go 1.25.0
 
 require (
 	github.com/hanwen/go-fuse/v2 v2.9.0
