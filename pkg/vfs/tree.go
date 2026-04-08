@@ -118,6 +118,7 @@ func NewTree(domains []string) *Tree {
 			ModTime:  time.Now(),
 		})
 	}
+	root.SetPopulated()
 	return &Tree{root: root}
 }
 
