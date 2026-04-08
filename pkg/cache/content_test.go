@@ -70,7 +70,9 @@ func TestContentCacheInvalidate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c.Set("key1", []byte("data"))
+	if err := c.Set("key1", []byte("data")); err != nil {
+		t.Fatal(err)
+	}
 	c.Invalidate("key1")
 
 	_, ok := c.Get("key1")
