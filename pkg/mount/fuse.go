@@ -69,6 +69,15 @@ type larkfsRoot struct {
 
 var _ = (fs.NodeReaddirer)((*larkfsRoot)(nil))
 var _ = (fs.NodeLookuper)((*larkfsRoot)(nil))
+var _ = (fs.NodeGetattrer)((*larkfsRoot)(nil))
+
+func (r *larkfsRoot) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
+	out.Mode = syscall.S_IFDIR | 0o755
+	now := time.Now()
+	out.Atime = uint64(now.Unix())
+	out.Mtime = uint64(now.Unix())
+	return 0
+}
 
 func (r *larkfsRoot) Readdir(ctx context.Context) (fs.DirStream, syscall.Errno) {
 	children, err := r.ops.ReadDir(ctx, "/")
