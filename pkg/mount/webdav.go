@@ -186,6 +186,9 @@ func (f *webdavFile) ensureData() error {
 	}
 	var err error
 	f.data, err = f.ops.Read(f.ctx, f.node.Path())
+	if f.data == nil && err == nil {
+		f.data = []byte{}
+	}
 	return err
 }
 

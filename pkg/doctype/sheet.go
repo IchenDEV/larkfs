@@ -30,18 +30,20 @@ func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) 
 	}
 
 	var result struct {
-		Sheets []struct {
-			SheetID string `json:"sheet_id"`
-			Title   string `json:"title"`
-		} `json:"sheets"`
+		Data struct {
+			Sheets []struct {
+				SheetID string `json:"sheet_id"`
+				Title   string `json:"title"`
+			} `json:"sheets"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	entries := make([]Entry, 0, len(result.Sheets)+1)
+	entries := make([]Entry, 0, len(result.Data.Sheets)+1)
 	entries = append(entries, Entry{Name: "_meta.json", Token: token, Type: TypeFile})
-	for _, s := range result.Sheets {
+	for _, s := range result.Data.Sheets {
 		entries = append(entries, Entry{
 			Name:  s.Title + ".csv",
 			Token: token + "|" + s.SheetID,
@@ -68,12 +70,14 @@ func (h *SheetHandler) Read(ctx context.Context, token string) ([]byte, error) {
 	}
 
 	var result struct {
-		Values [][]any `json:"values"`
+		Data struct {
+			Values [][]any `json:"values"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	return valuesToCSV(result.Values)
+	return valuesToCSV(result.Data.Values)
 }
 
 func (h *SheetHandler) Write(ctx context.Context, token string, data []byte) error {
@@ -102,12 +106,14 @@ func (h *SheetHandler) Create(ctx context.Context, _ string, name string, _ []by
 		return "", err
 	}
 	var result struct {
-		Token string `json:"spreadsheet_token"`
+		Data struct {
+			Token string `json:"spreadsheet_token"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	return result.Token, nil
+	return result.Data.Token, nil
 }
 
 func (h *SheetHandler) Delete(ctx context.Context, token string) error {

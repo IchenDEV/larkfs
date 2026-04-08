@@ -231,6 +231,8 @@ func (o *Operations) readMeetingContent(ctx context.Context, node *VNode) ([]byt
 			return nil, err
 		}
 		return extractTodos(summary), nil
+	case "recording":
+		return o.meeting.ReadRecording(ctx, meetingID)
 	}
 	return nil, fmt.Errorf("unsupported meeting part: %s", part)
 }

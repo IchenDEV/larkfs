@@ -77,7 +77,7 @@ func (n *VNode) SetPopulated() {
 func (n *VNode) NeedsRefresh(ttl time.Duration) bool {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
-	if len(n.children) == 0 {
+	if n.populatedAt.IsZero() {
 		return true
 	}
 	return time.Since(n.populatedAt) > ttl

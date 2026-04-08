@@ -37,13 +37,15 @@ func (h *ReadonlyHandler) Read(ctx context.Context, token string) ([]byte, error
 	}
 
 	var result struct {
-		Metas []json.RawMessage `json:"metas"`
+		Data struct {
+			Metas []json.RawMessage `json:"metas"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	if len(result.Metas) > 0 {
-		return result.Metas[0], nil
+	if len(result.Data.Metas) > 0 {
+		return result.Data.Metas[0], nil
 	}
 	return []byte("{}"), nil
 }

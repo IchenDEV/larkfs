@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"runtime"
@@ -37,7 +38,15 @@ func runDoctor() error {
 			printCheck(false, fmt.Sprintf("lark-cli auth: not logged in (%s)", strings.TrimSpace(string(out))))
 			hasError = true
 		} else {
-			printCheck(true, fmt.Sprintf("lark-cli auth: %s", firstLine(string(out))))
+			var authInfo struct {
+				UserName string `json:"userName"`
+				Identity string `json:"identity"`
+			}
+			if json.Unmarshal(out, &authInfo) == nil && authInfo.UserName != "" {
+				printCheck(true, fmt.Sprintf("lark-cli auth: logged in as %s (%s)", authInfo.UserName, authInfo.Identity))
+			} else {
+				printCheck(true, "lark-cli auth: authenticated")
+			}
 		}
 	}
 

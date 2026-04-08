@@ -57,7 +57,9 @@ func (a *MeetingAdapter) ListMeetings(ctx context.Context, date string) ([]docty
 	}
 
 	var result struct {
-		Items []Meeting `json:"items"`
+		Data struct {
+			Items []Meeting `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func (a *MeetingAdapter) ListMeetings(ctx context.Context, date string) ([]docty
 
 	var entries []doctype.Entry
 	var nameEntries []naming.NameEntry
-	for _, m := range result.Items {
+	for _, m := range result.Data.Items {
 		name := naming.SanitizeName(m.Topic)
 		entries = append(entries, doctype.Entry{
 			Name:  name,
@@ -114,12 +116,14 @@ func (a *MeetingAdapter) ReadSummary(ctx context.Context, meetingID string) ([]b
 	}
 
 	var result struct {
-		Markdown string `json:"markdown"`
+		Data struct {
+			Markdown string `json:"markdown"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	return []byte(result.Markdown), nil
+	return []byte(result.Data.Markdown), nil
 }
 
 func (a *MeetingAdapter) ReadTranscript(ctx context.Context, meetingID string) ([]byte, error) {
@@ -134,12 +138,14 @@ func (a *MeetingAdapter) ReadTranscript(ctx context.Context, meetingID string) (
 	}
 
 	var result struct {
-		Markdown string `json:"markdown"`
+		Data struct {
+			Markdown string `json:"markdown"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	return []byte(result.Markdown), nil
+	return []byte(result.Data.Markdown), nil
 }
 
 func (a *MeetingAdapter) getNoteToken(ctx context.Context, meetingID string) (string, error) {
@@ -149,17 +155,49 @@ func (a *MeetingAdapter) getNoteToken(ctx context.Context, meetingID string) (st
 	}
 
 	var result struct {
-		Items []struct {
-			NoteDocToken string `json:"note_doc_token"`
-		} `json:"items"`
+		Data struct {
+			Items []struct {
+				NoteDocToken string `json:"note_doc_token"`
+			} `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	if len(result.Items) == 0 {
+	if len(result.Data.Items) == 0 {
 		return "", fmt.Errorf("no notes found for meeting %s", meetingID)
 	}
-	return result.Items[0].NoteDocToken, nil
+	return result.Data.Items[0].NoteDocToken, nil
+}
+
+func (a *MeetingAdapter) ReadRecording(ctx context.Context, meetingID string) ([]byte, error) {
+	url, err := a.getRecordingURL(ctx, meetingID)
+	if err != nil {
+		return nil, err
+	}
+	return a.exec.Run(ctx, "drive", "+download", "--url", url, "--format", "raw")
+}
+
+func (a *MeetingAdapter) getRecordingURL(ctx context.Context, meetingID string) (string, error) {
+	params := clipkg.JSONParam(map[string]any{"meeting_id": meetingID})
+	out, err := a.exec.Run(ctx, "vc", "meeting.recording", "get", "--params", params, "--format", "json")
+	if err != nil {
+		return "", err
+	}
+	var result struct {
+		Data struct {
+			Recording struct {
+				URL string `json:"url"`
+			} `json:"recording"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(out, &result); err != nil {
+		return "", err
+	}
+	if result.Data.Recording.URL == "" {
+		return "", fmt.Errorf("no recording found for meeting %s", meetingID)
+	}
+	return result.Data.Recording.URL, nil
 }
 
 func (a *MeetingAdapter) getVerbatimToken(ctx context.Context, meetingID string) (string, error) {
@@ -169,15 +207,17 @@ func (a *MeetingAdapter) getVerbatimToken(ctx context.Context, meetingID string)
 	}
 
 	var result struct {
-		Items []struct {
-			VerbatimDocToken string `json:"verbatim_doc_token"`
-		} `json:"items"`
+		Data struct {
+			Items []struct {
+				VerbatimDocToken string `json:"verbatim_doc_token"`
+			} `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	if len(result.Items) == 0 {
+	if len(result.Data.Items) == 0 {
 		return "", fmt.Errorf("no transcript found for meeting %s", meetingID)
 	}
-	return result.Items[0].VerbatimDocToken, nil
+	return result.Data.Items[0].VerbatimDocToken, nil
 }

@@ -98,7 +98,7 @@ func TestVNodeNeedsRefresh(t *testing.T) {
 	}
 
 	if !node.NeedsRefresh(time.Second) {
-		t.Error("empty node should need refresh")
+		t.Error("unpopulated node should need refresh")
 	}
 
 	node.AddChild(&VNode{Name: "a", children: make(map[string]*VNode)})
@@ -111,5 +111,22 @@ func TestVNodeNeedsRefresh(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 	if !node.NeedsRefresh(10 * time.Millisecond) {
 		t.Error("node should need refresh after TTL")
+	}
+}
+
+func TestVNodeNeedsRefreshEmptyDir(t *testing.T) {
+	node := &VNode{
+		NodeType: NodeDir,
+		children: make(map[string]*VNode),
+	}
+	node.SetPopulated()
+
+	if node.NeedsRefresh(time.Second) {
+		t.Error("populated empty dir should not need refresh within TTL")
+	}
+
+	time.Sleep(50 * time.Millisecond)
+	if !node.NeedsRefresh(10 * time.Millisecond) {
+		t.Error("populated empty dir should need refresh after TTL")
 	}
 }

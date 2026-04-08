@@ -40,7 +40,7 @@ func (a *CalendarAdapter) ListEvents(ctx context.Context) ([]doctype.Entry, erro
 	}
 
 	var result struct {
-		Items []CalendarEvent `json:"items"`
+		Data []CalendarEvent `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (a *CalendarAdapter) ListEvents(ctx context.Context) ([]doctype.Entry, erro
 
 	var entries []doctype.Entry
 	var nameEntries []naming.NameEntry
-	for _, e := range result.Items {
+	for _, e := range result.Data {
 		name := naming.SanitizeName(e.Summary) + ".md"
 		entry := doctype.Entry{
 			Name:  name,
@@ -78,13 +78,13 @@ func (a *CalendarAdapter) ReadEvent(ctx context.Context, eventID string) ([]byte
 	}
 
 	var result struct {
-		Items []CalendarEvent `json:"items"`
+		Data []CalendarEvent `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	for _, e := range result.Items {
+	for _, e := range result.Data {
 		if e.EventID == eventID {
 			return formatEventMarkdown(e), nil
 		}

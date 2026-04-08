@@ -30,18 +30,20 @@ func (h *BitableHandler) List(ctx context.Context, token string) ([]Entry, error
 	}
 
 	var result struct {
-		Items []struct {
-			TableID string `json:"table_id"`
-			Name    string `json:"name"`
-		} `json:"items"`
+		Data struct {
+			Items []struct {
+				TableID string `json:"table_id"`
+				Name    string `json:"name"`
+			} `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	entries := make([]Entry, 0, len(result.Items)+1)
+	entries := make([]Entry, 0, len(result.Data.Items)+1)
 	entries = append(entries, Entry{Name: "_meta.json", Token: token, Type: TypeFile})
-	for _, t := range result.Items {
+	for _, t := range result.Data.Items {
 		entries = append(entries, Entry{
 			Name:  t.Name + ".jsonl",
 			Token: token + "|" + t.TableID,
@@ -68,14 +70,16 @@ func (h *BitableHandler) Read(ctx context.Context, token string) ([]byte, error)
 	}
 
 	var result struct {
-		Items []json.RawMessage `json:"items"`
+		Data struct {
+			Items []json.RawMessage `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
 	var buf bytes.Buffer
-	for _, item := range result.Items {
+	for _, item := range result.Data.Items {
 		buf.Write(item)
 		buf.WriteByte('\n')
 	}
