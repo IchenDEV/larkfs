@@ -87,3 +87,33 @@ When adding a new feature, add tests for the pure-logic parts. Adapter and mount
 - `pkg/vfs/operations.go` — routing hub for all read/write/list operations
 - `pkg/cli/executor.go` — all subprocess calls flow through here
 - `pkg/doctype/types.go` — interface contract for all document handlers
+
+## Cursor Cloud specific instructions
+
+### System dependencies (pre-installed in snapshot)
+
+- **Go 1.25+** — already available via `gotip`/`go`
+- **fuse3 + libfuse3-dev** — compile-time dependency for `go-fuse/v2`
+- **lark-cli** — installed globally via `npm install -g @larksuite/cli`; required at runtime by all CLI/mount/serve commands
+- **golangci-lint** — installed at `$(go env GOPATH)/bin/golangci-lint`
+
+### PATH note
+
+`$(go env GOPATH)/bin` is added to PATH in `~/.bashrc`. If `golangci-lint` is not found, run `export PATH="$PATH:$(go env GOPATH)/bin"`.
+
+### Quick reference
+
+| Task | Command |
+|------|---------|
+| Build | `make build` |
+| Test | `make test` |
+| Lint | `make lint` |
+| Run WebDAV (dev) | `./bin/larkfs serve --port 8080 --log-level debug` |
+| Run FUSE mount (dev) | `make dev-mount` |
+| Check env | `./bin/larkfs doctor` |
+
+### Caveats
+
+- `larkfs serve` and `larkfs mount` both require `lark-cli` to be in PATH **and** authenticated (`lark-cli auth login`). Without auth, the server starts but API calls fail with auth errors. Unit tests (`make test`) do **not** require `lark-cli` or auth.
+- `make lint` has a pre-existing `errcheck` warning in `pkg/cache/content_test.go:73` — this is not a regression.
+- FUSE mount mode (`larkfs mount`) requires the FUSE kernel module loaded. In containerized environments this may not work; use WebDAV mode (`larkfs serve`) instead.
