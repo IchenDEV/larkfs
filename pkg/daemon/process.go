@@ -139,8 +139,8 @@ func forceUnmountFS(mountpoint string) error {
 	case "darwin":
 		return exec.Command("umount", "-f", mountpoint).Run()
 	default:
-		if err := exec.Command("fusermount", "-u", mountpoint).Run(); err != nil {
-			return exec.Command("fusermount3", "-u", mountpoint).Run()
+		if err := exec.Command("fusermount", "-uz", mountpoint).Run(); err != nil {
+			return exec.Command("fusermount3", "-uz", mountpoint).Run()
 		}
 		return nil
 	}
