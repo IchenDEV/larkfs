@@ -9,7 +9,7 @@ import (
 	"github.com/IchenDEV/larkfs/pkg/naming"
 )
 
-const rootFolderToken = "root"
+const rootFolderToken = ""
 
 type DriveAdapter struct {
 	exec     *clipkg.Executor

@@ -32,21 +32,26 @@ func (a *MailAdapter) ListFolders(ctx context.Context) ([]doctype.Entry, error) 
 		"mail", "user_mailbox.folders", "list",
 		"--params", params, "--format", "json")
 	if err != nil {
+		if strings.Contains(err.Error(), "1230002") || strings.Contains(err.Error(), "1230003") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
 	var result struct {
-		Items []struct {
-			FolderID string `json:"folder_id"`
-			Name     string `json:"name"`
-		} `json:"items"`
+		Data struct {
+			Items []struct {
+				FolderID string `json:"folder_id"`
+				Name     string `json:"name"`
+			} `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	entries := make([]doctype.Entry, 0, len(result.Items)+2)
-	for _, f := range result.Items {
+	entries := make([]doctype.Entry, 0, len(result.Data.Items)+2)
+	for _, f := range result.Data.Items {
 		entries = append(entries, doctype.Entry{
 			Name:  naming.SanitizeName(f.Name),
 			Token: f.FolderID,
@@ -75,12 +80,12 @@ func (a *MailAdapter) ListMessages(ctx context.Context, folder string) ([]doctyp
 	}
 
 	var result struct {
-		Items []struct {
+		Data []struct {
 			MessageID string `json:"message_id"`
 			From      string `json:"from"`
 			Subject   string `json:"subject"`
 			Date      string `json:"date"`
-		} `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
@@ -88,7 +93,7 @@ func (a *MailAdapter) ListMessages(ctx context.Context, folder string) ([]doctyp
 
 	var entries []doctype.Entry
 	var nameEntries []naming.NameEntry
-	for _, m := range result.Items {
+	for _, m := range result.Data {
 		date := m.Date
 		if idx := strings.IndexByte(date, 'T'); idx >= 0 {
 			date = date[:idx]
@@ -119,23 +124,25 @@ func (a *MailAdapter) ReadMessage(ctx context.Context, messageID string) ([]byte
 		return nil, err
 	}
 
-	var msg struct {
-		MessageID string   `json:"message_id"`
-		ThreadID  string   `json:"thread_id"`
-		From      string   `json:"from"`
-		To        []string `json:"to"`
-		CC        []string `json:"cc"`
-		Date      string   `json:"date"`
-		Subject   string   `json:"subject"`
-		Body      string   `json:"body"`
-		Labels    []string `json:"labels"`
+	var resp struct {
+		Data struct {
+			MessageID string   `json:"message_id"`
+			ThreadID  string   `json:"thread_id"`
+			From      string   `json:"from"`
+			To        []string `json:"to"`
+			CC        []string `json:"cc"`
+			Date      string   `json:"date"`
+			Subject   string   `json:"subject"`
+			Body      string   `json:"body"`
+			Labels    []string `json:"labels"`
+		} `json:"data"`
 	}
-	if err := json.Unmarshal(out, &msg); err != nil {
+	if err := json.Unmarshal(out, &resp); err != nil {
 		return nil, err
 	}
 
 	md := fmt.Sprintf("---\nmessage_id: %q\nthread_id: %q\nfrom: %q\nto: %v\ncc: %v\ndate: %q\nsubject: %q\nlabels: %v\n---\n\n%s\n",
-		msg.MessageID, msg.ThreadID, msg.From, msg.To, msg.CC, msg.Date, msg.Subject, msg.Labels, msg.Body)
+		resp.Data.MessageID, resp.Data.ThreadID, resp.Data.From, resp.Data.To, resp.Data.CC, resp.Data.Date, resp.Data.Subject, resp.Data.Labels, resp.Data.Body)
 	return []byte(md), nil
 }
 

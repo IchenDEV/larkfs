@@ -37,14 +37,16 @@ func (a *WikiAdapter) ListSpaces(ctx context.Context) ([]doctype.Entry, error) {
 	}
 
 	var result struct {
-		Items []WikiSpace `json:"items"`
+		Data struct {
+			Items []WikiSpace `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	entries := make([]doctype.Entry, len(result.Items))
-	for i, s := range result.Items {
+	entries := make([]doctype.Entry, len(result.Data.Items))
+	for i, s := range result.Data.Items {
 		entries[i] = doctype.Entry{
 			Name:  naming.SanitizeName(s.Name),
 			Token: s.SpaceID,
@@ -73,20 +75,22 @@ func (a *WikiAdapter) ListNodes(ctx context.Context, spaceID string) ([]doctype.
 	}
 
 	var result struct {
-		Items []struct {
-			NodeToken string `json:"node_token"`
-			Title     string `json:"title"`
-			ObjType   string `json:"obj_type"`
-			HasChild  bool   `json:"has_child"`
-		} `json:"items"`
+		Data struct {
+			Items []struct {
+				NodeToken string `json:"node_token"`
+				Title     string `json:"title"`
+				ObjType   string `json:"obj_type"`
+				HasChild  bool   `json:"has_child"`
+			} `json:"items"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	entries := make([]doctype.Entry, len(result.Items))
-	nameEntries := make([]naming.NameEntry, len(result.Items))
-	for i, n := range result.Items {
+	entries := make([]doctype.Entry, len(result.Data.Items))
+	nameEntries := make([]naming.NameEntry, len(result.Data.Items))
+	for i, n := range result.Data.Items {
 		dt := doctype.DocType(n.ObjType)
 		isDir := n.HasChild || doctype.IsDirectory(dt)
 		name := naming.SanitizeName(n.Title) + doctype.FileExtension(dt)
@@ -133,16 +137,18 @@ func (a *WikiAdapter) ResolveNode(ctx context.Context, nodeToken string) (doctyp
 	}
 
 	var result struct {
-		Node struct {
-			ObjType  string `json:"obj_type"`
-			ObjToken string `json:"obj_token"`
-		} `json:"node"`
+		Data struct {
+			Node struct {
+				ObjType  string `json:"obj_type"`
+				ObjToken string `json:"obj_token"`
+			} `json:"node"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", "", err
 	}
 
-	info := nodeInfo{ObjType: result.Node.ObjType, ObjToken: result.Node.ObjToken}
+	info := nodeInfo{ObjType: result.Data.Node.ObjType, ObjToken: result.Data.Node.ObjToken}
 	a.meta.Set(cacheKey, info)
 	return doctype.DocType(info.ObjType), info.ObjToken, nil
 }

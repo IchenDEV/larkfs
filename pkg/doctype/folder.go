@@ -29,18 +29,20 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 	}
 
 	var result struct {
-		Files []struct {
-			Token string `json:"token"`
-			Name  string `json:"name"`
-			Type  string `json:"type"`
-		} `json:"files"`
+		Data struct {
+			Files []struct {
+				Token string `json:"token"`
+				Name  string `json:"name"`
+				Type  string `json:"type"`
+			} `json:"files"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
 
-	entries := make([]Entry, 0, len(result.Files))
-	for _, f := range result.Files {
+	entries := make([]Entry, 0, len(result.Data.Files))
+	for _, f := range result.Data.Files {
 		dt := DocType(f.Type)
 		entries = append(entries, Entry{
 			Name:  f.Name,

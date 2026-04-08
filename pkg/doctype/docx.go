@@ -28,12 +28,14 @@ func (h *DocxHandler) Read(ctx context.Context, token string) ([]byte, error) {
 		return nil, err
 	}
 	var result struct {
-		Markdown string `json:"markdown"`
+		Data struct {
+			Markdown string `json:"markdown"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	return []byte(result.Markdown), nil
+	return []byte(result.Data.Markdown), nil
 }
 
 func (h *DocxHandler) Write(ctx context.Context, token string, data []byte) error {
@@ -57,12 +59,14 @@ func (h *DocxHandler) Create(ctx context.Context, parentToken string, name strin
 		return "", err
 	}
 	var result struct {
-		Token string `json:"doc_token"`
+		Data struct {
+			Token string `json:"doc_token"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	return result.Token, nil
+	return result.Data.Token, nil
 }
 
 func (h *DocxHandler) Delete(ctx context.Context, token string) error {

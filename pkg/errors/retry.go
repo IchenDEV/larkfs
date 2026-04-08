@@ -48,9 +48,6 @@ func isRetryable(err error) bool {
 	if errors.Is(err, cli.ErrRateLimited) {
 		return true
 	}
-	if errors.Is(err, cli.ErrAuthExpired) {
-		return true
-	}
 	var cliErr *cli.CLIError
 	if errors.As(err, &cliErr) {
 		return cliErr.ExitCode >= 500

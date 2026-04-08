@@ -96,7 +96,7 @@ func TestIsRetryable(t *testing.T) {
 		want bool
 	}{
 		{cli.ErrRateLimited, true},
-		{cli.ErrAuthExpired, true},
+		{cli.ErrAuthExpired, false},
 		{cli.ErrNotFound, false},
 		{cli.ErrForbidden, false},
 		{fmt.Errorf("random error"), false},
