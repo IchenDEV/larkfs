@@ -82,6 +82,15 @@ func TestVNodePathDeep(t *testing.T) {
 	}
 }
 
+func TestNewTreeRootIsPopulated(t *testing.T) {
+	tree := NewTree(allDomains)
+	root := tree.Root()
+
+	if root.NeedsRefresh(time.Second) {
+		t.Error("root node should be populated after NewTree")
+	}
+}
+
 func TestVNodeNeedsRefresh(t *testing.T) {
 	node := &VNode{
 		NodeType: NodeDir,

@@ -56,6 +56,10 @@ func (o *Operations) ReadDir(ctx context.Context, path string) ([]*VNode, error)
 		return nil, fmt.Errorf("not found: %s", path)
 	}
 
+	if node == o.tree.Root() {
+		return node.Children(), nil
+	}
+
 	if !node.NeedsRefresh(o.refreshTTL) {
 		return node.Children(), nil
 	}
