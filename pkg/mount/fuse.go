@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/exec"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -17,8 +19,9 @@ import (
 )
 
 type FUSEServer struct {
-	server *fuse.Server
-	state  *mountState
+	server     *fuse.Server
+	state      *mountState
+	mountpoint string
 }
 
 func NewFUSEServer(cfg config.MountConfig) (*FUSEServer, error) {
@@ -47,7 +50,7 @@ func NewFUSEServer(cfg config.MountConfig) (*FUSEServer, error) {
 		return nil, err
 	}
 
-	return &FUSEServer{server: server, state: state}, nil
+	return &FUSEServer{server: server, state: state, mountpoint: cfg.Mountpoint}, nil
 }
 
 func (s *FUSEServer) Wait() {
@@ -56,9 +59,24 @@ func (s *FUSEServer) Wait() {
 
 func (s *FUSEServer) Unmount() {
 	if err := s.server.Unmount(); err != nil {
-		slog.Error("unmount failed", "error", err)
+		slog.Warn("standard unmount failed, trying lazy unmount", "error", err)
+		if err := lazyUnmount(s.mountpoint); err != nil {
+			slog.Error("lazy unmount failed", "error", err)
+		}
 	}
 	s.state.meta.Close()
+}
+
+func lazyUnmount(mountpoint string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("umount", mountpoint).Run()
+	default:
+		if err := exec.Command("fusermount", "-uz", mountpoint).Run(); err != nil {
+			return exec.Command("fusermount3", "-uz", mountpoint).Run()
+		}
+		return nil
+	}
 }
 
 type larkfsRoot struct {
