@@ -26,6 +26,7 @@ func main() {
 		newServeCmd(),
 		newStatusCmd(),
 		newDoctorCmd(),
+		newInitCmd(),
 		newVersionCmd(),
 	)
 

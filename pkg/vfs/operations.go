@@ -111,6 +111,54 @@ func (o *Operations) Write(ctx context.Context, path string, data []byte) error 
 	return o.writeContent(ctx, node, data)
 }
 
+func (o *Operations) Create(ctx context.Context, path string) (*VNode, error) {
+	if o.readOnly {
+		return nil, fmt.Errorf("filesystem mounted read-only")
+	}
+
+	parts := strings.Split(path, "/")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("cannot create at root level")
+	}
+
+	parentPath := strings.Join(parts[:len(parts)-1], "/")
+	fileName := parts[len(parts)-1]
+
+	parent := o.tree.Resolve(parentPath)
+	if parent == nil {
+		return nil, fmt.Errorf("parent not found: %s", parentPath)
+	}
+
+	domain := parent.Domain
+	if domain == "" {
+		domain = o.domainFromPath(parent)
+	}
+
+	if domain != "drive" {
+		return nil, fmt.Errorf("create not supported for domain: %s", domain)
+	}
+
+	dt := doctype.TypeDocx
+	fileName = strings.TrimSuffix(fileName, ".md")
+
+	token, err := o.drive.Create(ctx, parent.Token, fileName, dt, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	child := &VNode{
+		Name:     parts[len(parts)-1],
+		Token:    token,
+		DocType:  dt,
+		NodeType: NodeFile,
+		Domain:   domain,
+		ModTime:  time.Now(),
+		children: make(map[string]*VNode),
+	}
+	parent.AddChild(child)
+	return child, nil
+}
+
 func (o *Operations) fetchEntries(ctx context.Context, node *VNode) ([]doctype.Entry, error) {
 	domain := node.Domain
 	if domain == "" {
@@ -122,6 +170,9 @@ func (o *Operations) fetchEntries(ctx context.Context, node *VNode) ([]doctype.E
 		if node.Token == "" {
 			return o.drive.ListRoot(ctx)
 		}
+		if node.DocType != "" && node.DocType != doctype.TypeFolder {
+			return o.drive.ListByType(ctx, node.Token, node.DocType)
+		}
 		return o.drive.ListFolder(ctx, node.Token)
 	case "wiki":
 		if node.Token == "" {
@@ -131,6 +182,10 @@ func (o *Operations) fetchEntries(ctx context.Context, node *VNode) ([]doctype.E
 	case "im":
 		if node.Token == "" {
 			return o.im.ListChats(ctx)
+		}
+		if strings.HasSuffix(node.Token, "|files") {
+			chatID := strings.TrimSuffix(node.Token, "|files")
+			return o.im.ListChatFiles(ctx, chatID)
 		}
 		return o.im.ListChatContents(ctx, node.Token)
 	case "calendar":

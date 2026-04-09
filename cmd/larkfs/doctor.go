@@ -50,6 +50,37 @@ func runDoctor() error {
 		}
 	}
 
+	if path != "" {
+		doctorOut, err := exec.Command(path, "doctor").CombinedOutput()
+		if err == nil {
+			var doctorResult struct {
+				Checks []struct {
+					Name    string `json:"name"`
+					Status  string `json:"status"`
+					Message string `json:"message"`
+					Hint    string `json:"hint"`
+				} `json:"checks"`
+				OK bool `json:"ok"`
+			}
+			if json.Unmarshal(doctorOut, &doctorResult) == nil {
+				for _, c := range doctorResult.Checks {
+					if c.Name == "cli_version" || c.Name == "token_exists" || c.Name == "token_verified" {
+						continue
+					}
+					ok := c.Status == "pass" || c.Status == "warn"
+					msg := fmt.Sprintf("lark-cli %s: %s", c.Name, c.Message)
+					if c.Hint != "" {
+						msg += " (" + c.Hint + ")"
+					}
+					if !ok {
+						hasError = true
+					}
+					printCheck(ok, msg)
+				}
+			}
+		}
+	}
+
 	checkFUSE()
 
 	if hasError {
@@ -85,11 +116,4 @@ func printCheck(ok bool, msg string) {
 	} else {
 		fmt.Printf("[✗] %s\n", msg)
 	}
-}
-
-func firstLine(s string) string {
-	if i := strings.IndexByte(s, '\n'); i >= 0 {
-		return s[:i]
-	}
-	return strings.TrimSpace(s)
 }

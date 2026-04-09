@@ -40,8 +40,8 @@
 
 ### Prerequisites
 
-- **[lark-cli](https://github.com/larksuite/cli)** — `npm install -g @larksuite/cli && lark-cli auth login`
-- **FUSE** (按需):
+- **[lark-cli](https://github.com/larksuite/cli)** — `npm install -g @larksuite/cli`
+- **FUSE** (仅 FUSE 模式需要):
   - macOS: `brew install macfuse` 或 `brew install macos-fuse-t/homebrew-cask/fuse-t`
   - Linux: `apt install fuse3`
 
@@ -55,34 +55,46 @@ go install github.com/IchenDEV/larkfs/cmd/larkfs@latest
 # https://github.com/IchenDEV/larkfs/releases
 ```
 
+### Setup
+
+```bash
+# 一键初始化：检测 lark-cli → 配置应用 → OAuth 登录
+larkfs init
+```
+
+`larkfs init` 会自动引导完成以下步骤：
+1. 检查 lark-cli 是否安装
+2. 若未配置，运行 `lark-cli config init --new` 创建应用
+3. 若未登录，运行 `lark-cli auth login --domain all` 获取授权
+
 ### Usage
 
 ```bash
-# 1. 检查环境（lark-cli、FUSE 等）
+# 检查环境（lark-cli 配置、认证、连通性、FUSE）
 larkfs doctor
 
-# 2. 挂载（前台）
-larkfs mount ~/lark
-
-# 3. 挂载（后台守护进程）
-larkfs mount ~/lark -d
-
-# 4. 只读模式
-larkfs mount ~/lark --read-only
-
-# 5. 指定域
-larkfs mount ~/lark --domains drive,wiki,calendar
-
-# 6. WebDAV 模式（无需 FUSE）
+# WebDAV 模式（推荐，无需 FUSE）
 larkfs serve --port 8080
 
-# 7. 查看状态
+# 挂载（前台）
+larkfs mount ~/lark
+
+# 挂载（后台守护进程）
+larkfs mount ~/lark -d
+
+# 只读模式
+larkfs mount ~/lark --read-only
+
+# 指定域
+larkfs mount ~/lark --domains drive,wiki,calendar
+
+# 查看状态
 larkfs status
 
-# 8. 卸载
+# 卸载
 larkfs unmount ~/lark
 
-# 9. 卸载全部
+# 卸载全部
 larkfs unmount --all
 ```
 
@@ -163,7 +175,7 @@ larkfs unmount --all
 
 | Package | Responsibility |
 |---|---|
-| `cmd/larkfs` | CLI entry — mount, unmount, serve, status, doctor |
+| `cmd/larkfs` | CLI entry — mount, unmount, serve, status, doctor, init |
 | `pkg/cli` | lark-cli subprocess wrapper, JSON param builder, error classification |
 | `pkg/doctype` | Per-type read/write handlers: docx, sheet, bitable, file, folder, readonly |
 | `pkg/adapter` | Domain adapters: drive, wiki, im, calendar, task, mail, meeting |

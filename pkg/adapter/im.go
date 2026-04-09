@@ -80,6 +80,53 @@ func (a *IMAdapter) ListChatContents(_ context.Context, chatID string) ([]doctyp
 	}, nil
 }
 
+func (a *IMAdapter) ListChatFiles(ctx context.Context, chatID string) ([]doctype.Entry, error) {
+	cacheKey := "im:files:" + chatID
+	if cached, ok := a.meta.Get(cacheKey); ok {
+		return cached.([]doctype.Entry), nil
+	}
+
+	out, err := a.exec.Run(ctx, "im", "+chat-messages-list", "--chat-id", chatID, "--format", "json")
+	if err != nil {
+		return nil, nil
+	}
+
+	var result struct {
+		Data struct {
+			Messages []struct {
+				MsgType   string `json:"msg_type"`
+				MessageID string `json:"message_id"`
+				Content   string `json:"content"`
+			} `json:"messages"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(out, &result); err != nil {
+		return nil, nil
+	}
+
+	var entries []doctype.Entry
+	for _, msg := range result.Data.Messages {
+		if msg.MsgType != "file" && msg.MsgType != "image" && msg.MsgType != "media" {
+			continue
+		}
+		name := naming.SanitizeName(msg.MessageID)
+		switch msg.MsgType {
+		case "image":
+			name += ".png"
+		case "file", "media":
+			name += ".bin"
+		}
+		entries = append(entries, doctype.Entry{
+			Name:  name,
+			Token: chatID + "|file|" + msg.MessageID,
+			Type:  doctype.TypeFile,
+		})
+	}
+
+	a.meta.Set(cacheKey, entries)
+	return entries, nil
+}
+
 func (a *IMAdapter) ReadMessages(ctx context.Context, chatID string) ([]byte, error) {
 	out, err := a.exec.Run(ctx, "im", "+chat-messages-list", "--chat-id", chatID, "--format", "json")
 	if err != nil {

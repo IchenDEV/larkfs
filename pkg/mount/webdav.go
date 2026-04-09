@@ -76,7 +76,14 @@ func (f *webdavFS) OpenFile(ctx context.Context, name string, flag int, perm os.
 	name = strings.TrimPrefix(name, "/")
 	node := f.ops.Tree().Resolve(name)
 	if node == nil {
-		return nil, os.ErrNotExist
+		if flag&os.O_CREATE == 0 {
+			return nil, os.ErrNotExist
+		}
+		newNode, err := f.ops.Create(ctx, name)
+		if err != nil {
+			return nil, err
+		}
+		return &webdavFile{ops: f.ops, node: newNode, ctx: ctx}, nil
 	}
 	return &webdavFile{ops: f.ops, node: node, ctx: ctx}, nil
 }
@@ -210,4 +217,31 @@ func (i *vnodeFileInfo) Mode() os.FileMode {
 
 func (i *vnodeFileInfo) IsDir() bool {
 	return i.node.IsDir()
+}
+
+func (i *vnodeFileInfo) ContentType(_ context.Context) (string, error) {
+	if i.node.IsDir() {
+		return "", webdav.ErrNotImplemented
+	}
+	name := i.node.Name
+	switch {
+	case strings.HasSuffix(name, ".md"):
+		return "text/markdown; charset=utf-8", nil
+	case strings.HasSuffix(name, ".csv"):
+		return "text/csv; charset=utf-8", nil
+	case strings.HasSuffix(name, ".json"):
+		return "application/json; charset=utf-8", nil
+	case strings.HasSuffix(name, ".jsonl"):
+		return "application/x-ndjson; charset=utf-8", nil
+	case strings.HasSuffix(name, ".txt"):
+		return "text/plain; charset=utf-8", nil
+	case strings.HasSuffix(name, ".mp4"):
+		return "video/mp4", nil
+	case strings.HasSuffix(name, ".png"):
+		return "image/png", nil
+	case strings.HasSuffix(name, ".bin"):
+		return "application/octet-stream", nil
+	default:
+		return "application/octet-stream", nil
+	}
 }
