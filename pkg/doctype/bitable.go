@@ -24,7 +24,7 @@ func (h *BitableHandler) Extension() string { return ".base" }
 
 func (h *BitableHandler) List(ctx context.Context, token string) ([]Entry, error) {
 	out, err := h.exec.Run(ctx,
-		"base", "+table-list", "--base-token", token, "--format", "json")
+		"base", "+table-list", "--base-token", token)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (h *BitableHandler) List(ctx context.Context, token string) ([]Entry, error
 		Data struct {
 			Items []struct {
 				TableID string `json:"table_id"`
-				Name    string `json:"name"`
+				Name    string `json:"table_name"`
 			} `json:"items"`
 		} `json:"data"`
 	}
@@ -63,15 +63,14 @@ func (h *BitableHandler) Read(ctx context.Context, token string) ([]byte, error)
 	out, err := h.exec.Run(ctx,
 		"base", "+record-list",
 		"--base-token", baseToken,
-		"--table-id", tableID,
-		"--format", "json")
+		"--table-id", tableID)
 	if err != nil {
 		return nil, err
 	}
 
 	var result struct {
 		Data struct {
-			Items []json.RawMessage `json:"items"`
+			Records []json.RawMessage `json:"data"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
@@ -79,7 +78,7 @@ func (h *BitableHandler) Read(ctx context.Context, token string) ([]byte, error)
 	}
 
 	var buf bytes.Buffer
-	for _, item := range result.Data.Items {
+	for _, item := range result.Data.Records {
 		buf.Write(item)
 		buf.WriteByte('\n')
 	}

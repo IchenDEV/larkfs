@@ -60,7 +60,7 @@ func (h *DocxHandler) Create(ctx context.Context, parentToken string, name strin
 	}
 	var result struct {
 		Data struct {
-			Token string `json:"doc_token"`
+			Token string `json:"doc_id"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {

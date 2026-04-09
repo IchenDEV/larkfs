@@ -2,6 +2,8 @@ package adapter
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/IchenDEV/larkfs/pkg/cache"
 	clipkg "github.com/IchenDEV/larkfs/pkg/cli"
@@ -57,11 +59,47 @@ func (a *DriveAdapter) ListFolder(ctx context.Context, token string) ([]doctype.
 	return entries, nil
 }
 
+func (a *DriveAdapter) ListByType(ctx context.Context, token string, dt doctype.DocType) ([]doctype.Entry, error) {
+	cacheKey := fmt.Sprintf("drive:list:%s:%s", dt, token)
+	if cached, ok := a.meta.Get(cacheKey); ok {
+		return cached.([]doctype.Entry), nil
+	}
+
+	entries, err := a.registry.Handler(dt).List(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	a.meta.Set(cacheKey, entries)
+	return entries, nil
+}
+
 func (a *DriveAdapter) Read(ctx context.Context, token string, dt doctype.DocType) ([]byte, error) {
+	if dt == doctype.TypeFile && strings.Contains(token, "|") {
+		if resolved := a.resolveCompositeType(token); resolved != dt {
+			return a.registry.Handler(resolved).Read(ctx, token)
+		}
+	}
 	return a.registry.Handler(dt).Read(ctx, token)
 }
 
+func (a *DriveAdapter) resolveCompositeType(token string) doctype.DocType {
+	prefix := strings.SplitN(token, "|", 2)[0]
+	if strings.HasPrefix(prefix, "shtcn") {
+		return doctype.TypeSheet
+	}
+	if strings.HasPrefix(prefix, "bascn") {
+		return doctype.TypeBitable
+	}
+	return doctype.TypeFile
+}
+
 func (a *DriveAdapter) Write(ctx context.Context, token string, dt doctype.DocType, data []byte) error {
+	if dt == doctype.TypeFile && strings.Contains(token, "|") {
+		if resolved := a.resolveCompositeType(token); resolved != dt {
+			dt = resolved
+		}
+	}
 	err := a.registry.Handler(dt).Write(ctx, token, data)
 	if err == nil {
 		a.meta.InvalidatePrefix("drive:")

@@ -24,16 +24,18 @@ func (h *SheetHandler) Extension() string { return ".sheet" }
 
 func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) {
 	out, err := h.exec.Run(ctx,
-		"sheets", "+info", "--spreadsheet-token", token, "--format", "json")
+		"sheets", "+info", "--spreadsheet-token", token)
 	if err != nil {
 		return nil, err
 	}
 
 	var result struct {
 		Data struct {
-			Sheets []struct {
-				SheetID string `json:"sheet_id"`
-				Title   string `json:"title"`
+			Sheets struct {
+				Sheets []struct {
+					SheetID string `json:"sheet_id"`
+					Title   string `json:"title"`
+				} `json:"sheets"`
 			} `json:"sheets"`
 		} `json:"data"`
 	}
@@ -41,9 +43,10 @@ func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) 
 		return nil, err
 	}
 
-	entries := make([]Entry, 0, len(result.Data.Sheets)+1)
+	sheets := result.Data.Sheets.Sheets
+	entries := make([]Entry, 0, len(sheets)+1)
 	entries = append(entries, Entry{Name: "_meta.json", Token: token, Type: TypeFile})
-	for _, s := range result.Data.Sheets {
+	for _, s := range sheets {
 		entries = append(entries, Entry{
 			Name:  s.Title + ".csv",
 			Token: token + "|" + s.SheetID,
@@ -63,21 +66,22 @@ func (h *SheetHandler) Read(ctx context.Context, token string) ([]byte, error) {
 	out, err := h.exec.Run(ctx,
 		"sheets", "+read",
 		"--spreadsheet-token", spreadsheetToken,
-		"--range", sheetID,
-		"--format", "json")
+		"--range", sheetID)
 	if err != nil {
 		return nil, err
 	}
 
 	var result struct {
 		Data struct {
-			Values [][]any `json:"values"`
+			ValueRange struct {
+				Values [][]any `json:"values"`
+			} `json:"valueRange"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	return valuesToCSV(result.Data.Values)
+	return valuesToCSV(result.Data.ValueRange.Values)
 }
 
 func (h *SheetHandler) Write(ctx context.Context, token string, data []byte) error {
