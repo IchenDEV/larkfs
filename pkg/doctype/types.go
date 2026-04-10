@@ -3,6 +3,7 @@ package doctype
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 var ErrReadOnly = errors.New("read-only document type")
@@ -21,11 +22,13 @@ const (
 )
 
 type Entry struct {
-	Name  string
-	Token string
-	Type  DocType
-	Size  int64
-	IsDir bool
+	Name        string
+	Token       string
+	Type        DocType
+	Size        int64
+	IsDir       bool
+	ModTime     time.Time
+	CreatedTime time.Time
 }
 
 type TypeHandler interface {

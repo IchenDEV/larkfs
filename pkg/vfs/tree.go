@@ -16,13 +16,14 @@ const (
 )
 
 type VNode struct {
-	Name     string
-	Token    string
-	DocType  doctype.DocType
-	NodeType NodeType
-	Domain   string
-	Size     int64
-	ModTime  time.Time
+	Name        string
+	Token       string
+	DocType     doctype.DocType
+	NodeType    NodeType
+	Domain      string
+	Size        int64
+	ModTime     time.Time
+	CreatedTime time.Time
 
 	mu          sync.RWMutex
 	children    map[string]*VNode
@@ -110,13 +111,24 @@ type Tree struct {
 func NewTree(domains []string) *Tree {
 	root := NewRootNode()
 	for _, domain := range domains {
-		root.AddChild(&VNode{
+		domainNode := &VNode{
 			Name:     domain,
 			NodeType: NodeDir,
 			Domain:   domain,
 			children: make(map[string]*VNode),
 			ModTime:  time.Now(),
-		})
+		}
+		if domain == "calendar" || domain == "tasks" {
+			domainNode.AddChild(&VNode{
+				Name:     "_create.md",
+				Token:    "_create",
+				NodeType: NodeFile,
+				Domain:   domain,
+				ModTime:  time.Now(),
+				children: make(map[string]*VNode),
+			})
+		}
+		root.AddChild(domainNode)
 	}
 	root.SetPopulated()
 	return &Tree{root: root}

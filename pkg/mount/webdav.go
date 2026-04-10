@@ -3,7 +3,6 @@ package mount
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -48,11 +47,43 @@ func NewWebDAVServer(cfg config.ServeConfig) (*WebDAVServer, error) {
 }
 
 func (s *WebDAVServer) Serve(addr string) error {
+	mux := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if depth := r.Header.Get("Depth"); strings.EqualFold(depth, "infinity") {
+			http.Error(w, "Depth: infinity is not supported", http.StatusForbidden)
+			return
+		}
+
+		if r.Method == http.MethodHead {
+			s.handleHead(w, r)
+			return
+		}
+
+		s.handler.ServeHTTP(w, r)
+	})
+
 	s.srv = &http.Server{
 		Addr:    addr,
-		Handler: s.handler,
+		Handler: mux,
 	}
 	return s.srv.ListenAndServe()
+}
+
+func (s *WebDAVServer) handleHead(w http.ResponseWriter, r *http.Request) {
+	name := strings.TrimPrefix(r.URL.Path, "/")
+	node := s.state.ops.Tree().Resolve(name)
+	if node == nil {
+		http.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	if node.IsDir() {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	info := &vnodeFileInfo{node: node}
+	w.Header().Set("Content-Type", contentTypeFromName(node.Name))
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", info.Size()))
+	w.Header().Set("Last-Modified", info.ModTime().UTC().Format(http.TimeFormat))
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *WebDAVServer) Close() {
@@ -62,6 +93,29 @@ func (s *WebDAVServer) Close() {
 		_ = s.srv.Shutdown(ctx)
 	}
 	s.state.meta.Close()
+}
+
+func contentTypeFromName(name string) string {
+	switch {
+	case strings.HasSuffix(name, ".md"):
+		return "text/markdown; charset=utf-8"
+	case strings.HasSuffix(name, ".csv"):
+		return "text/csv; charset=utf-8"
+	case strings.HasSuffix(name, ".json"):
+		return "application/json; charset=utf-8"
+	case strings.HasSuffix(name, ".jsonl"):
+		return "application/x-ndjson; charset=utf-8"
+	case strings.HasSuffix(name, ".txt"):
+		return "text/plain; charset=utf-8"
+	case strings.HasSuffix(name, ".mp4"):
+		return "video/mp4"
+	case strings.HasSuffix(name, ".png"):
+		return "image/png"
+	case strings.HasSuffix(name, ".bin"):
+		return "application/octet-stream"
+	default:
+		return "application/octet-stream"
+	}
 }
 
 type webdavFS struct {
@@ -75,6 +129,9 @@ func (f *webdavFS) Mkdir(ctx context.Context, name string, perm os.FileMode) err
 func (f *webdavFS) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
 	name = strings.TrimPrefix(name, "/")
 	node := f.ops.Tree().Resolve(name)
+	if node == nil {
+		node = f.tryLoadParent(ctx, name)
+	}
 	if node == nil {
 		if flag&os.O_CREATE == 0 {
 			return nil, os.ErrNotExist
@@ -100,148 +157,22 @@ func (f *webdavFS) Stat(ctx context.Context, name string) (os.FileInfo, error) {
 	name = strings.TrimPrefix(name, "/")
 	node := f.ops.Tree().Resolve(name)
 	if node == nil {
+		node = f.tryLoadParent(ctx, name)
+	}
+	if node == nil {
 		return nil, os.ErrNotExist
 	}
 	return &vnodeFileInfo{node: node}, nil
 }
 
-type webdavFile struct {
-	ops       *vfs.Operations
-	node      *vfs.VNode
-	ctx       context.Context
-	data      []byte
-	offset    int64
-	dirOffset int
-}
-
-func (f *webdavFile) Close() error { return nil }
-
-func (f *webdavFile) Read(p []byte) (int, error) {
-	if err := f.ensureData(); err != nil {
-		return 0, err
-	}
-	if f.offset >= int64(len(f.data)) {
-		return 0, io.EOF
-	}
-	n := copy(p, f.data[f.offset:])
-	f.offset += int64(n)
-	return n, nil
-}
-
-func (f *webdavFile) Seek(offset int64, whence int) (int64, error) {
-	if err := f.ensureData(); err != nil {
-		return 0, err
-	}
-	var newOffset int64
-	switch whence {
-	case io.SeekStart:
-		newOffset = offset
-	case io.SeekCurrent:
-		newOffset = f.offset + offset
-	case io.SeekEnd:
-		newOffset = int64(len(f.data)) + offset
-	default:
-		return 0, fmt.Errorf("invalid whence: %d", whence)
-	}
-	if newOffset < 0 {
-		return 0, fmt.Errorf("seek: negative position")
-	}
-	f.offset = newOffset
-	return f.offset, nil
-}
-
-func (f *webdavFile) Readdir(count int) ([]os.FileInfo, error) {
-	children, err := f.ops.ReadDir(f.ctx, f.node.Path())
-	if err != nil {
-		return nil, err
-	}
-
-	if f.dirOffset >= len(children) {
-		if count > 0 {
-			return nil, io.EOF
-		}
-		return nil, nil
-	}
-
-	remaining := children[f.dirOffset:]
-	if count > 0 && count < len(remaining) {
-		remaining = remaining[:count]
-	}
-	f.dirOffset += len(remaining)
-
-	infos := make([]os.FileInfo, len(remaining))
-	for i, c := range remaining {
-		infos[i] = &vnodeFileInfo{node: c}
-	}
-	return infos, nil
-}
-
-func (f *webdavFile) Stat() (os.FileInfo, error) {
-	return &vnodeFileInfo{node: f.node}, nil
-}
-
-func (f *webdavFile) Write(p []byte) (int, error) {
-	if err := f.ops.Write(f.ctx, f.node.Path(), p); err != nil {
-		return 0, err
-	}
-	return len(p), nil
-}
-
-func (f *webdavFile) ensureData() error {
-	if f.data != nil {
+func (f *webdavFS) tryLoadParent(ctx context.Context, name string) *vfs.VNode {
+	idx := strings.LastIndex(name, "/")
+	if idx < 0 {
 		return nil
 	}
-	var err error
-	f.data, err = f.ops.Read(f.ctx, f.node.Path())
-	if f.data == nil && err == nil {
-		f.data = []byte{}
+	parentPath := name[:idx]
+	if _, err := f.ops.ReadDir(ctx, parentPath); err != nil {
+		return nil
 	}
-	return err
-}
-
-type vnodeFileInfo struct {
-	node *vfs.VNode
-}
-
-func (i *vnodeFileInfo) Name() string       { return i.node.Name }
-func (i *vnodeFileInfo) Size() int64        { return i.node.Size }
-func (i *vnodeFileInfo) ModTime() time.Time { return i.node.ModTime }
-func (i *vnodeFileInfo) Sys() interface{}   { return nil }
-
-func (i *vnodeFileInfo) Mode() os.FileMode {
-	if i.node.IsDir() {
-		return os.ModeDir | 0o755
-	}
-	return 0o644
-}
-
-func (i *vnodeFileInfo) IsDir() bool {
-	return i.node.IsDir()
-}
-
-func (i *vnodeFileInfo) ContentType(_ context.Context) (string, error) {
-	if i.node.IsDir() {
-		return "", webdav.ErrNotImplemented
-	}
-	name := i.node.Name
-	switch {
-	case strings.HasSuffix(name, ".md"):
-		return "text/markdown; charset=utf-8", nil
-	case strings.HasSuffix(name, ".csv"):
-		return "text/csv; charset=utf-8", nil
-	case strings.HasSuffix(name, ".json"):
-		return "application/json; charset=utf-8", nil
-	case strings.HasSuffix(name, ".jsonl"):
-		return "application/x-ndjson; charset=utf-8", nil
-	case strings.HasSuffix(name, ".txt"):
-		return "text/plain; charset=utf-8", nil
-	case strings.HasSuffix(name, ".mp4"):
-		return "video/mp4", nil
-	case strings.HasSuffix(name, ".png"):
-		return "image/png", nil
-	case strings.HasSuffix(name, ".bin"):
-		return "application/octet-stream", nil
-	default:
-		return "application/octet-stream", nil
-	}
+	return f.ops.Tree().Resolve(name)
 }
