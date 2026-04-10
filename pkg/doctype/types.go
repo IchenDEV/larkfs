@@ -22,12 +22,13 @@ const (
 )
 
 type Entry struct {
-	Name    string
-	Token   string
-	Type    DocType
-	Size    int64
-	IsDir   bool
-	ModTime time.Time
+	Name        string
+	Token       string
+	Type        DocType
+	Size        int64
+	IsDir       bool
+	ModTime     time.Time
+	CreatedTime time.Time
 }
 
 type TypeHandler interface {

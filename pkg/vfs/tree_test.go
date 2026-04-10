@@ -172,3 +172,21 @@ func TestNewTreeDriveNoCreateNode(t *testing.T) {
 		t.Error("drive should not have _create.md")
 	}
 }
+
+func TestVNodeCreatedTime(t *testing.T) {
+	created := time.Date(2026, 1, 15, 8, 0, 0, 0, time.UTC)
+	node := &VNode{
+		Name:        "test.md",
+		NodeType:    NodeFile,
+		CreatedTime: created,
+		children:    make(map[string]*VNode),
+	}
+	if !node.CreatedTime.Equal(created) {
+		t.Errorf("expected CreatedTime=%v, got %v", created, node.CreatedTime)
+	}
+
+	zero := &VNode{Name: "zero.md", NodeType: NodeFile, children: make(map[string]*VNode)}
+	if !zero.CreatedTime.IsZero() {
+		t.Error("expected zero CreatedTime for default VNode")
+	}
+}

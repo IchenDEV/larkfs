@@ -80,14 +80,15 @@ func (o *Operations) ReadDir(ctx context.Context, path string) ([]*VNode, error)
 			modTime = time.Now()
 		}
 		child := &VNode{
-			Name:     e.Name,
-			Token:    e.Token,
-			DocType:  e.Type,
-			NodeType: nt,
-			Domain:   node.Domain,
-			Size:     e.Size,
-			ModTime:  modTime,
-			children: make(map[string]*VNode),
+			Name:        e.Name,
+			Token:       e.Token,
+			DocType:     e.Type,
+			NodeType:    nt,
+			Domain:      node.Domain,
+			Size:        e.Size,
+			ModTime:     modTime,
+			CreatedTime: e.CreatedTime,
+			children:    make(map[string]*VNode),
 		}
 		node.AddChild(child)
 	}

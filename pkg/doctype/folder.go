@@ -36,6 +36,7 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 				Name         string `json:"name"`
 				Type         string `json:"type"`
 				ModifiedTime int64  `json:"modified_time,omitempty"`
+				CreatedTime  int64  `json:"created_time,omitempty"`
 			} `json:"files"`
 		} `json:"data"`
 	}
@@ -50,12 +51,17 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 		if f.ModifiedTime > 0 {
 			modTime = time.Unix(f.ModifiedTime, 0)
 		}
+		var createdTime time.Time
+		if f.CreatedTime > 0 {
+			createdTime = time.Unix(f.CreatedTime, 0)
+		}
 		entries = append(entries, Entry{
-			Name:    f.Name,
-			Token:   f.Token,
-			Type:    dt,
-			IsDir:   IsDirectory(dt),
-			ModTime: modTime,
+			Name:        f.Name,
+			Token:       f.Token,
+			Type:        dt,
+			IsDir:       IsDirectory(dt),
+			ModTime:     modTime,
+			CreatedTime: createdTime,
 		})
 	}
 	return entries, nil

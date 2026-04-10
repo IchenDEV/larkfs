@@ -16,13 +16,14 @@ const (
 )
 
 type VNode struct {
-	Name     string
-	Token    string
-	DocType  doctype.DocType
-	NodeType NodeType
-	Domain   string
-	Size     int64
-	ModTime  time.Time
+	Name        string
+	Token       string
+	DocType     doctype.DocType
+	NodeType    NodeType
+	Domain      string
+	Size        int64
+	ModTime     time.Time
+	CreatedTime time.Time
 
 	mu          sync.RWMutex
 	children    map[string]*VNode
