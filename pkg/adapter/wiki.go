@@ -92,7 +92,7 @@ func (a *WikiAdapter) ListNodes(ctx context.Context, spaceID string) ([]doctype.
 	nameEntries := make([]naming.NameEntry, len(result.Data.Items))
 	for i, n := range result.Data.Items {
 		dt := doctype.DocType(n.ObjType)
-		isDir := n.HasChild || doctype.IsDirectory(dt)
+		isDir := doctype.IsDirectory(dt)
 		name := naming.SanitizeName(n.Title) + doctype.FileExtension(dt)
 
 		entries[i] = doctype.Entry{

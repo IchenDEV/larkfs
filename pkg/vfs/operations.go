@@ -75,6 +75,10 @@ func (o *Operations) ReadDir(ctx context.Context, path string) ([]*VNode, error)
 		if e.IsDir || doctype.IsDirectory(e.Type) {
 			nt = NodeDir
 		}
+		modTime := e.ModTime
+		if modTime.IsZero() {
+			modTime = time.Now()
+		}
 		child := &VNode{
 			Name:     e.Name,
 			Token:    e.Token,
@@ -82,7 +86,7 @@ func (o *Operations) ReadDir(ctx context.Context, path string) ([]*VNode, error)
 			NodeType: nt,
 			Domain:   node.Domain,
 			Size:     e.Size,
-			ModTime:  time.Now(),
+			ModTime:  modTime,
 			children: make(map[string]*VNode),
 		}
 		node.AddChild(child)
@@ -125,6 +129,11 @@ func (o *Operations) Create(ctx context.Context, path string) (*VNode, error) {
 	fileName := parts[len(parts)-1]
 
 	parent := o.tree.Resolve(parentPath)
+	if parent == nil {
+		if _, err := o.ReadDir(ctx, parentPath); err == nil {
+			parent = o.tree.Resolve(parentPath)
+		}
+	}
 	if parent == nil {
 		return nil, fmt.Errorf("parent not found: %s", parentPath)
 	}

@@ -130,3 +130,45 @@ func TestVNodeNeedsRefreshEmptyDir(t *testing.T) {
 		t.Error("populated empty dir should need refresh after TTL")
 	}
 }
+
+func TestNewTreeCalendarHasCreateNode(t *testing.T) {
+	tree := NewTree(allDomains)
+
+	node := tree.Resolve("/calendar/_create.md")
+	if node == nil {
+		t.Fatal("calendar/_create.md should exist at init")
+	}
+	if node.Token != "_create" {
+		t.Errorf("expected token=_create, got %s", node.Token)
+	}
+	if node.IsDir() {
+		t.Error("_create.md should be a file, not a directory")
+	}
+	if node.Domain != "calendar" {
+		t.Errorf("expected domain=calendar, got %s", node.Domain)
+	}
+}
+
+func TestNewTreeTasksHasCreateNode(t *testing.T) {
+	tree := NewTree(allDomains)
+
+	node := tree.Resolve("/tasks/_create.md")
+	if node == nil {
+		t.Fatal("tasks/_create.md should exist at init")
+	}
+	if node.Token != "_create" {
+		t.Errorf("expected token=_create, got %s", node.Token)
+	}
+	if node.IsDir() {
+		t.Error("_create.md should be a file, not a directory")
+	}
+}
+
+func TestNewTreeDriveNoCreateNode(t *testing.T) {
+	tree := NewTree([]string{"drive"})
+
+	node := tree.Resolve("/drive/_create.md")
+	if node != nil {
+		t.Error("drive should not have _create.md")
+	}
+}

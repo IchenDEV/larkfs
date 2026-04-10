@@ -3,6 +3,7 @@ package doctype
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/IchenDEV/larkfs/pkg/cli"
 )
@@ -31,9 +32,10 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 	var result struct {
 		Data struct {
 			Files []struct {
-				Token string `json:"token"`
-				Name  string `json:"name"`
-				Type  string `json:"type"`
+				Token        string `json:"token"`
+				Name         string `json:"name"`
+				Type         string `json:"type"`
+				ModifiedTime int64  `json:"modified_time,omitempty"`
 			} `json:"files"`
 		} `json:"data"`
 	}
@@ -44,11 +46,16 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 	entries := make([]Entry, 0, len(result.Data.Files))
 	for _, f := range result.Data.Files {
 		dt := DocType(f.Type)
+		modTime := time.Now()
+		if f.ModifiedTime > 0 {
+			modTime = time.Unix(f.ModifiedTime, 0)
+		}
 		entries = append(entries, Entry{
-			Name:  f.Name,
-			Token: f.Token,
-			Type:  dt,
-			IsDir: IsDirectory(dt),
+			Name:    f.Name,
+			Token:   f.Token,
+			Type:    dt,
+			IsDir:   IsDirectory(dt),
+			ModTime: modTime,
 		})
 	}
 	return entries, nil
