@@ -11,13 +11,13 @@ import (
 )
 
 type WikiAdapter struct {
-	exec     *clipkg.Executor
+	exec     clipkg.Runner
 	registry *doctype.Registry
 	meta     *cache.MetadataCache
 	namer    *naming.Resolver
 }
 
-func NewWikiAdapter(exec *clipkg.Executor, registry *doctype.Registry, meta *cache.MetadataCache, namer *naming.Resolver) *WikiAdapter {
+func NewWikiAdapter(exec clipkg.Runner, registry *doctype.Registry, meta *cache.MetadataCache, namer *naming.Resolver) *WikiAdapter {
 	return &WikiAdapter{exec: exec, registry: registry, meta: meta, namer: namer}
 }
 
@@ -26,23 +26,25 @@ type WikiSpace struct {
 	Name    string `json:"name"`
 }
 
-func (a *WikiAdapter) ListSpaces(ctx context.Context) ([]doctype.Entry, error) {
+func (a *WikiAdapter) ListSpaces(ctx context.Context) (doctype.ListResult, error) {
 	if cached, ok := a.meta.Get("wiki:spaces"); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
-	out, err := a.exec.Run(ctx, "wiki", "spaces", "list", "--format", "json", "--page-all")
+	out, err := a.exec.Run(ctx, "wiki", "spaces", "list", "--format", "json", "--page-all", "--page-limit", "0")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
 		Data struct {
-			Items []WikiSpace `json:"items"`
+			Items      []WikiSpace `json:"items"`
+			HasMore    bool        `json:"has_more"`
+			NextCursor string      `json:"page_token"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	entries := make([]doctype.Entry, len(result.Data.Items))
@@ -55,23 +57,33 @@ func (a *WikiAdapter) ListSpaces(ctx context.Context) ([]doctype.Entry, error) {
 		}
 	}
 
-	a.meta.Set("wiki:spaces", entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			HasMore:    result.Data.HasMore,
+			NextCursor: result.Data.NextCursor,
+			WindowSize: len(entries),
+			SortKey:    "name",
+			Truncated:  result.Data.HasMore,
+		},
+	}
+	a.meta.Set("wiki:spaces", list)
+	return list, nil
 }
 
-func (a *WikiAdapter) ListNodes(ctx context.Context, spaceID string) ([]doctype.Entry, error) {
+func (a *WikiAdapter) ListNodes(ctx context.Context, spaceID string) (doctype.ListResult, error) {
 	cacheKey := "wiki:nodes:" + spaceID
 	if cached, ok := a.meta.Get(cacheKey); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	params := clipkg.JSONParam(map[string]any{"space_id": spaceID})
 	out, err := a.exec.Run(ctx,
 		"wiki", "nodes", "list",
 		"--params", params,
-		"--format", "json", "--page-all")
+		"--format", "json", "--page-all", "--page-limit", "0")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
@@ -82,10 +94,12 @@ func (a *WikiAdapter) ListNodes(ctx context.Context, spaceID string) ([]doctype.
 				ObjType   string `json:"obj_type"`
 				HasChild  bool   `json:"has_child"`
 			} `json:"items"`
+			HasMore    bool   `json:"has_more"`
+			NextCursor string `json:"page_token"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	entries := make([]doctype.Entry, len(result.Data.Items))
@@ -111,8 +125,18 @@ func (a *WikiAdapter) ListNodes(ctx context.Context, spaceID string) ([]doctype.
 		}
 	}
 
-	a.meta.Set(cacheKey, entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			HasMore:    result.Data.HasMore,
+			NextCursor: result.Data.NextCursor,
+			WindowSize: len(entries),
+			SortKey:    "name",
+			Truncated:  result.Data.HasMore,
+		},
+	}
+	a.meta.Set(cacheKey, list)
+	return list, nil
 }
 
 type nodeInfo struct {

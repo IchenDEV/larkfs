@@ -33,7 +33,7 @@ func newServeCmd() *cobra.Command {
 	f.BoolVarP(&cfg.Daemon, "daemon", "d", false, "Run as background daemon")
 	f.StringVar(&cfg.LogLevel, "log-level", "info", "Log level")
 	f.BoolVar(&cfg.ReadOnly, "read-only", false, "Serve in read-only mode")
-	f.StringVar(&cfg.Domains, "domains", "drive,wiki,im,calendar,tasks,mail,meetings", "Enabled domains")
+	f.StringVar(&cfg.Domains, "domains", "drive,wiki,im,calendar,tasks,mail,meetings,approval,base,contact,docs,minutes,sheets,vc,_system", "Enabled domains")
 	f.StringVar(&cfg.LarkCLIPath, "lark-cli", "", "Path to lark-cli binary")
 
 	return cmd

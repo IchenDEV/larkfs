@@ -39,7 +39,7 @@ func newMountCmd() *cobra.Command {
 	f.StringVar(&cfg.LogFile, "log-file", "", "Log file path (default: ~/.larkfs/larkfs.log)")
 	f.StringVar(&cfg.LogLevel, "log-level", "info", "Log level (debug/info/warn/error)")
 	f.BoolVar(&cfg.ReadOnly, "read-only", false, "Mount in read-only mode")
-	f.StringVar(&cfg.Domains, "domains", "drive,wiki,im,calendar,tasks,mail,meetings", "Enabled domains (comma-separated)")
+	f.StringVar(&cfg.Domains, "domains", "drive,wiki,im,calendar,tasks,mail,meetings,approval,base,contact,docs,minutes,sheets,vc,_system", "Enabled domains (comma-separated)")
 	f.StringVar(&cfg.LarkCLIPath, "lark-cli", "", "Path to lark-cli binary (auto-detect)")
 
 	return cmd

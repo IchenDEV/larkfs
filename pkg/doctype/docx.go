@@ -8,18 +8,18 @@ import (
 )
 
 type DocxHandler struct {
-	exec *cli.Executor
+	exec cli.Runner
 }
 
-func NewDocxHandler(exec *cli.Executor) *DocxHandler {
+func NewDocxHandler(exec cli.Runner) *DocxHandler {
 	return &DocxHandler{exec: exec}
 }
 
 func (h *DocxHandler) IsDirectory() bool { return false }
 func (h *DocxHandler) Extension() string { return ".md" }
 
-func (h *DocxHandler) List(_ context.Context, _ string) ([]Entry, error) {
-	return nil, nil
+func (h *DocxHandler) List(_ context.Context, _ string) (ListResult, error) {
+	return ListResult{}, nil
 }
 
 func (h *DocxHandler) Read(ctx context.Context, token string) ([]byte, error) {

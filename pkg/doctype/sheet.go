@@ -12,21 +12,21 @@ import (
 )
 
 type SheetHandler struct {
-	exec *cli.Executor
+	exec cli.Runner
 }
 
-func NewSheetHandler(exec *cli.Executor) *SheetHandler {
+func NewSheetHandler(exec cli.Runner) *SheetHandler {
 	return &SheetHandler{exec: exec}
 }
 
 func (h *SheetHandler) IsDirectory() bool { return true }
 func (h *SheetHandler) Extension() string { return ".sheet" }
 
-func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) {
+func (h *SheetHandler) List(ctx context.Context, token string) (ListResult, error) {
 	out, err := h.exec.Run(ctx,
 		"sheets", "+info", "--spreadsheet-token", token)
 	if err != nil {
-		return nil, err
+		return ListResult{}, err
 	}
 
 	var result struct {
@@ -40,7 +40,7 @@ func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) 
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return ListResult{}, err
 	}
 
 	sheets := result.Data.Sheets.Sheets
@@ -53,7 +53,13 @@ func (h *SheetHandler) List(ctx context.Context, token string) ([]Entry, error) 
 			Type:  TypeFile,
 		})
 	}
-	return entries, nil
+	return ListResult{
+		Entries: entries,
+		Page: PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "sheet_order",
+		},
+	}, nil
 }
 
 func (h *SheetHandler) Read(ctx context.Context, token string) ([]byte, error) {

@@ -31,10 +31,23 @@ type Entry struct {
 	CreatedTime time.Time
 }
 
+type PageInfo struct {
+	HasMore    bool   `json:"has_more"`
+	NextCursor string `json:"next_cursor,omitempty"`
+	WindowSize int    `json:"window_size"`
+	SortKey    string `json:"sort_key,omitempty"`
+	Truncated  bool   `json:"truncated"`
+}
+
+type ListResult struct {
+	Entries []Entry  `json:"entries"`
+	Page    PageInfo `json:"page"`
+}
+
 type TypeHandler interface {
 	IsDirectory() bool
 	Extension() string
-	List(ctx context.Context, token string) ([]Entry, error)
+	List(ctx context.Context, token string) (ListResult, error)
 	Read(ctx context.Context, token string) ([]byte, error)
 	Write(ctx context.Context, token string, data []byte) error
 	Create(ctx context.Context, parentToken string, name string, data []byte) (string, error)

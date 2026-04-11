@@ -12,12 +12,12 @@ import (
 )
 
 type CalendarAdapter struct {
-	exec  *clipkg.Executor
+	exec  clipkg.Runner
 	meta  *cache.MetadataCache
 	namer *naming.Resolver
 }
 
-func NewCalendarAdapter(exec *clipkg.Executor, meta *cache.MetadataCache, namer *naming.Resolver) *CalendarAdapter {
+func NewCalendarAdapter(exec clipkg.Runner, meta *cache.MetadataCache, namer *naming.Resolver) *CalendarAdapter {
 	return &CalendarAdapter{exec: exec, meta: meta, namer: namer}
 }
 
@@ -29,21 +29,21 @@ type CalendarEvent struct {
 	Location string `json:"location,omitempty"`
 }
 
-func (a *CalendarAdapter) ListEvents(ctx context.Context) ([]doctype.Entry, error) {
+func (a *CalendarAdapter) ListEvents(ctx context.Context) (doctype.ListResult, error) {
 	if cached, ok := a.meta.Get("calendar:events"); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	out, err := a.exec.Run(ctx, "calendar", "+agenda", "--format", "json")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
 		Data []CalendarEvent `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var entries []doctype.Entry
@@ -67,8 +67,15 @@ func (a *CalendarAdapter) ListEvents(ctx context.Context) ([]doctype.Entry, erro
 	}
 
 	entries = append(entries, doctype.Entry{Name: "_create.md", Token: "_create", Type: doctype.TypeFile})
-	a.meta.Set("calendar:events", entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "start_time",
+		},
+	}
+	a.meta.Set("calendar:events", list)
+	return list, nil
 }
 
 func (a *CalendarAdapter) ReadEvent(ctx context.Context, eventID string) ([]byte, error) {

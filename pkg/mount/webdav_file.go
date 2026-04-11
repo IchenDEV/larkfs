@@ -21,9 +21,22 @@ type webdavFile struct {
 	data      []byte
 	offset    int64
 	dirOffset int
+	flags     int
+	dirty     bool
 }
 
-func (f *webdavFile) Close() error { return nil }
+func (f *webdavFile) Close() error {
+	if f.node.IsDir() || !f.dirty {
+		return nil
+	}
+	if err := f.ops.Write(f.ctx, f.node.Path(), f.data); err != nil {
+		return err
+	}
+	f.node.Size = int64(len(f.data))
+	f.node.ModTime = time.Now()
+	f.dirty = false
+	return nil
+}
 
 func (f *webdavFile) Read(p []byte) (int, error) {
 	if f.node.IsDir() {
@@ -97,10 +110,19 @@ func (f *webdavFile) Stat() (os.FileInfo, error) {
 }
 
 func (f *webdavFile) Write(p []byte) (int, error) {
-	if err := f.ops.Write(f.ctx, f.node.Path(), p); err != nil {
+	if err := f.ensureData(); err != nil {
 		return 0, err
 	}
-	f.node.Size = int64(len(p))
+	end := f.offset + int64(len(p))
+	if end > int64(len(f.data)) {
+		buf := make([]byte, end)
+		copy(buf, f.data)
+		f.data = buf
+	}
+	copy(f.data[f.offset:end], p)
+	f.offset = end
+	f.dirty = true
+	f.node.Size = int64(len(f.data))
 	return len(p), nil
 }
 

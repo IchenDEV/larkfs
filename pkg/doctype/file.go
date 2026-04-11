@@ -10,18 +10,18 @@ import (
 )
 
 type FileHandler struct {
-	exec     *cli.Executor
+	exec     cli.Runner
 	cacheDir string
 }
 
-func NewFileHandler(exec *cli.Executor, cacheDir string) *FileHandler {
+func NewFileHandler(exec cli.Runner, cacheDir string) *FileHandler {
 	return &FileHandler{exec: exec, cacheDir: cacheDir}
 }
 
 func (h *FileHandler) IsDirectory() bool { return false }
 func (h *FileHandler) Extension() string { return "" }
 
-func (h *FileHandler) List(_ context.Context, _ string) ([]Entry, error) { return nil, nil }
+func (h *FileHandler) List(_ context.Context, _ string) (ListResult, error) { return ListResult{}, nil }
 
 func (h *FileHandler) Read(ctx context.Context, token string) ([]byte, error) {
 	tmpDir := filepath.Join(h.cacheDir, "downloads")
@@ -41,17 +41,7 @@ func (h *FileHandler) Read(ctx context.Context, token string) ([]byte, error) {
 }
 
 func (h *FileHandler) Write(ctx context.Context, token string, data []byte) error {
-	tmpFile := filepath.Join(h.cacheDir, "uploads", token)
-	if err := os.MkdirAll(filepath.Dir(tmpFile), 0o755); err != nil {
-		return err
-	}
-	if err := os.WriteFile(tmpFile, data, 0o644); err != nil {
-		return err
-	}
-	defer os.Remove(tmpFile)
-
-	_, err := h.exec.Run(ctx, "drive", "+upload", "--file-path", tmpFile)
-	return err
+	return ErrReadOnly
 }
 
 func (h *FileHandler) Create(ctx context.Context, parentToken string, name string, data []byte) (string, error) {
@@ -73,12 +63,14 @@ func (h *FileHandler) Create(ctx context.Context, parentToken string, name strin
 	}
 
 	var result struct {
-		Token string `json:"file_token"`
+		Data struct {
+			Token string `json:"file_token"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	return result.Token, nil
+	return result.Data.Token, nil
 }
 
 func (h *FileHandler) Delete(ctx context.Context, token string) error {

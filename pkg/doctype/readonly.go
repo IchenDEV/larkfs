@@ -8,11 +8,11 @@ import (
 )
 
 type ReadonlyHandler struct {
-	exec    *cli.Executor
+	exec    cli.Runner
 	docType DocType
 }
 
-func NewReadonlyHandler(exec *cli.Executor, docType DocType) *ReadonlyHandler {
+func NewReadonlyHandler(exec cli.Runner, docType DocType) *ReadonlyHandler {
 	return &ReadonlyHandler{exec: exec, docType: docType}
 }
 
@@ -22,7 +22,9 @@ func (h *ReadonlyHandler) Extension() string {
 	return FileExtension(h.docType)
 }
 
-func (h *ReadonlyHandler) List(_ context.Context, _ string) ([]Entry, error) { return nil, nil }
+func (h *ReadonlyHandler) List(_ context.Context, _ string) (ListResult, error) {
+	return ListResult{}, nil
+}
 
 func (h *ReadonlyHandler) Read(ctx context.Context, token string) ([]byte, error) {
 	reqDoc := map[string]any{"doc_token": token, "doc_type": string(h.docType)}

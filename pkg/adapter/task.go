@@ -12,12 +12,12 @@ import (
 )
 
 type TaskAdapter struct {
-	exec  *clipkg.Executor
+	exec  clipkg.Runner
 	meta  *cache.MetadataCache
 	namer *naming.Resolver
 }
 
-func NewTaskAdapter(exec *clipkg.Executor, meta *cache.MetadataCache, namer *naming.Resolver) *TaskAdapter {
+func NewTaskAdapter(exec clipkg.Runner, meta *cache.MetadataCache, namer *naming.Resolver) *TaskAdapter {
 	return &TaskAdapter{exec: exec, meta: meta, namer: namer}
 }
 
@@ -28,14 +28,14 @@ type Task struct {
 	Status  string `json:"status,omitempty"`
 }
 
-func (a *TaskAdapter) ListTasks(ctx context.Context) ([]doctype.Entry, error) {
+func (a *TaskAdapter) ListTasks(ctx context.Context) (doctype.ListResult, error) {
 	if cached, ok := a.meta.Get("tasks:list"); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	out, err := a.exec.Run(ctx, "api", "GET", "/open-apis/task/v2/tasks", "--format", "json")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
@@ -44,7 +44,7 @@ func (a *TaskAdapter) ListTasks(ctx context.Context) ([]doctype.Entry, error) {
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var entries []doctype.Entry
@@ -67,8 +67,15 @@ func (a *TaskAdapter) ListTasks(ctx context.Context) ([]doctype.Entry, error) {
 	}
 
 	entries = append(entries, doctype.Entry{Name: "_create.md", Token: "_create", Type: doctype.TypeFile})
-	a.meta.Set("tasks:list", entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "summary",
+		},
+	}
+	a.meta.Set("tasks:list", list)
+	return list, nil
 }
 
 func (a *TaskAdapter) ReadTask(ctx context.Context, taskID string) ([]byte, error) {
