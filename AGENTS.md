@@ -76,9 +76,12 @@ Always unmarshal into `struct { Data struct { ... } \`json:"data"\` }`. Never ex
 
 ```bash
 go test ./... -v -race -count=1
+make test-cover
 ```
 
 Tests exist for: `pkg/cli`, `pkg/cache`, `pkg/naming`, `pkg/vfs`, `pkg/errors`, and selected adapter/mount behavior. Tests do NOT call real APIs — they test pure logic and mocked executor flows (caching, naming, retry, tree structure, control-node routing, error classification, JSON param safety, buffered writes).
+
+New black-box unit tests should live in each module's `test/` subdirectory (for example `pkg/vfs/test`) so test files do not sit flat beside implementation files. Keep same-package tests only when Go requires access to unexported FUSE/WebDAV/main internals. Coverage for subdirectory tests must use `make test-cover`, which applies `-coverpkg` to production packages and excludes test driver packages from the denominator.
 
 When adding a new feature, add tests for the pure-logic parts. Adapter and mount tests should use mocked executors or VFS/mount fixtures, not real `lark-cli` network calls.
 

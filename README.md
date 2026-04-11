@@ -204,6 +204,9 @@ make build
 # Run tests
 make test
 
+# Coverage across production packages
+make test-cover
+
 # Lint
 make lint
 
