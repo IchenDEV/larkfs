@@ -12,21 +12,21 @@ import (
 )
 
 type BitableHandler struct {
-	exec *cli.Executor
+	exec cli.Runner
 }
 
-func NewBitableHandler(exec *cli.Executor) *BitableHandler {
+func NewBitableHandler(exec cli.Runner) *BitableHandler {
 	return &BitableHandler{exec: exec}
 }
 
 func (h *BitableHandler) IsDirectory() bool { return true }
 func (h *BitableHandler) Extension() string { return ".base" }
 
-func (h *BitableHandler) List(ctx context.Context, token string) ([]Entry, error) {
+func (h *BitableHandler) List(ctx context.Context, token string) (ListResult, error) {
 	out, err := h.exec.Run(ctx,
 		"base", "+table-list", "--base-token", token)
 	if err != nil {
-		return nil, err
+		return ListResult{}, err
 	}
 
 	var result struct {
@@ -38,7 +38,7 @@ func (h *BitableHandler) List(ctx context.Context, token string) ([]Entry, error
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return ListResult{}, err
 	}
 
 	entries := make([]Entry, 0, len(result.Data.Items)+1)
@@ -50,7 +50,13 @@ func (h *BitableHandler) List(ctx context.Context, token string) ([]Entry, error
 			Type:  TypeFile,
 		})
 	}
-	return entries, nil
+	return ListResult{
+		Entries: entries,
+		Page: PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "table_order",
+		},
+	}, nil
 }
 
 func (h *BitableHandler) Read(ctx context.Context, token string) ([]byte, error) {

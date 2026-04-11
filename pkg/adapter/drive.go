@@ -14,34 +14,34 @@ import (
 const rootFolderToken = ""
 
 type DriveAdapter struct {
-	exec     *clipkg.Executor
+	exec     clipkg.Runner
 	registry *doctype.Registry
 	meta     *cache.MetadataCache
 	namer    *naming.Resolver
 }
 
-func NewDriveAdapter(exec *clipkg.Executor, registry *doctype.Registry, meta *cache.MetadataCache, namer *naming.Resolver) *DriveAdapter {
+func NewDriveAdapter(exec clipkg.Runner, registry *doctype.Registry, meta *cache.MetadataCache, namer *naming.Resolver) *DriveAdapter {
 	return &DriveAdapter{exec: exec, registry: registry, meta: meta, namer: namer}
 }
 
-func (a *DriveAdapter) ListRoot(ctx context.Context) ([]doctype.Entry, error) {
+func (a *DriveAdapter) ListRoot(ctx context.Context) (doctype.ListResult, error) {
 	return a.ListFolder(ctx, rootFolderToken)
 }
 
-func (a *DriveAdapter) ListFolder(ctx context.Context, token string) ([]doctype.Entry, error) {
+func (a *DriveAdapter) ListFolder(ctx context.Context, token string) (doctype.ListResult, error) {
 	cacheKey := "drive:list:" + token
 	if cached, ok := a.meta.Get(cacheKey); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	handler := a.registry.Handler(doctype.TypeFolder)
-	entries, err := handler.List(ctx, token)
+	list, err := handler.List(ctx, token)
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
-	nameEntries := make([]naming.NameEntry, len(entries))
-	for i, e := range entries {
+	nameEntries := make([]naming.NameEntry, len(list.Entries))
+	for i, e := range list.Entries {
 		nameEntries[i] = naming.NameEntry{
 			Name:  naming.SanitizeName(e.Name) + doctype.FileExtension(e.Type),
 			Token: e.Token,
@@ -49,29 +49,29 @@ func (a *DriveAdapter) ListFolder(ctx context.Context, token string) ([]doctype.
 	}
 
 	resolved := a.namer.ResolveNames(nameEntries)
-	for i := range entries {
-		if fname, ok := resolved[entries[i].Token]; ok {
-			entries[i].Name = fname
+	for i := range list.Entries {
+		if fname, ok := resolved[list.Entries[i].Token]; ok {
+			list.Entries[i].Name = fname
 		}
 	}
 
-	a.meta.Set(cacheKey, entries)
-	return entries, nil
+	a.meta.Set(cacheKey, list)
+	return list, nil
 }
 
-func (a *DriveAdapter) ListByType(ctx context.Context, token string, dt doctype.DocType) ([]doctype.Entry, error) {
+func (a *DriveAdapter) ListByType(ctx context.Context, token string, dt doctype.DocType) (doctype.ListResult, error) {
 	cacheKey := fmt.Sprintf("drive:list:%s:%s", dt, token)
 	if cached, ok := a.meta.Get(cacheKey); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
-	entries, err := a.registry.Handler(dt).List(ctx, token)
+	list, err := a.registry.Handler(dt).List(ctx, token)
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
-	a.meta.Set(cacheKey, entries)
-	return entries, nil
+	a.meta.Set(cacheKey, list)
+	return list, nil
 }
 
 func (a *DriveAdapter) Read(ctx context.Context, token string, dt doctype.DocType) ([]byte, error) {

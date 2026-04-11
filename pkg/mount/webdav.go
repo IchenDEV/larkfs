@@ -123,7 +123,9 @@ type webdavFS struct {
 }
 
 func (f *webdavFS) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
-	return webdav.ErrNotImplemented
+	name = strings.TrimPrefix(name, "/")
+	_, err := f.ops.Mkdir(ctx, "/"+name)
+	return err
 }
 
 func (f *webdavFS) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
@@ -140,17 +142,25 @@ func (f *webdavFS) OpenFile(ctx context.Context, name string, flag int, perm os.
 		if err != nil {
 			return nil, err
 		}
-		return &webdavFile{ops: f.ops, node: newNode, ctx: ctx}, nil
+		return &webdavFile{ops: f.ops, node: newNode, ctx: ctx, flags: flag, dirty: true}, nil
 	}
-	return &webdavFile{ops: f.ops, node: node, ctx: ctx}, nil
+	file := &webdavFile{ops: f.ops, node: node, ctx: ctx, flags: flag}
+	if flag&os.O_TRUNC != 0 && !node.IsDir() {
+		file.data = []byte{}
+		file.dirty = true
+	}
+	return file, nil
 }
 
 func (f *webdavFS) RemoveAll(ctx context.Context, name string) error {
-	return webdav.ErrNotImplemented
+	name = strings.TrimPrefix(name, "/")
+	return f.ops.Remove(ctx, "/"+name)
 }
 
 func (f *webdavFS) Rename(ctx context.Context, oldName, newName string) error {
-	return webdav.ErrNotImplemented
+	oldName = strings.TrimPrefix(oldName, "/")
+	newName = strings.TrimPrefix(newName, "/")
+	return f.ops.Rename(ctx, "/"+oldName, "/"+newName)
 }
 
 func (f *webdavFS) Stat(ctx context.Context, name string) (os.FileInfo, error) {

@@ -9,24 +9,24 @@ import (
 )
 
 type FolderHandler struct {
-	exec *cli.Executor
+	exec cli.Runner
 }
 
-func NewFolderHandler(exec *cli.Executor) *FolderHandler {
+func NewFolderHandler(exec cli.Runner) *FolderHandler {
 	return &FolderHandler{exec: exec}
 }
 
 func (h *FolderHandler) IsDirectory() bool { return true }
 func (h *FolderHandler) Extension() string { return "" }
 
-func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error) {
+func (h *FolderHandler) List(ctx context.Context, token string) (ListResult, error) {
 	params := cli.JSONParam(map[string]any{"folder_token": token})
 	out, err := h.exec.Run(ctx,
 		"drive", "files", "list",
 		"--params", params,
-		"--format", "json", "--page-all")
+		"--format", "json", "--page-all", "--page-limit", "0")
 	if err != nil {
-		return nil, err
+		return ListResult{}, err
 	}
 
 	var result struct {
@@ -38,10 +38,12 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 				ModifiedTime int64  `json:"modified_time,omitempty"`
 				CreatedTime  int64  `json:"created_time,omitempty"`
 			} `json:"files"`
+			HasMore    bool   `json:"has_more"`
+			NextCursor string `json:"next_page_token"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return ListResult{}, err
 	}
 
 	entries := make([]Entry, 0, len(result.Data.Files))
@@ -64,7 +66,16 @@ func (h *FolderHandler) List(ctx context.Context, token string) ([]Entry, error)
 			CreatedTime: createdTime,
 		})
 	}
-	return entries, nil
+	return ListResult{
+		Entries: entries,
+		Page: PageInfo{
+			HasMore:    result.Data.HasMore,
+			NextCursor: result.Data.NextCursor,
+			WindowSize: len(entries),
+			SortKey:    "name",
+			Truncated:  result.Data.HasMore,
+		},
+	}, nil
 }
 
 func (h *FolderHandler) Read(_ context.Context, _ string) ([]byte, error) {
@@ -86,12 +97,14 @@ func (h *FolderHandler) Create(ctx context.Context, parentToken string, name str
 		return "", err
 	}
 	var result struct {
-		Token string `json:"token"`
+		Data struct {
+			Token string `json:"token"`
+		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	return result.Token, nil
+	return result.Data.Token, nil
 }
 
 func (h *FolderHandler) Delete(ctx context.Context, token string) error {

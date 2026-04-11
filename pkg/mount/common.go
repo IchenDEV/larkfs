@@ -60,6 +60,7 @@ func buildMount(cfg config.MountConfig) (*mountState, error) {
 	meetingAdapter := adapter.NewMeetingAdapter(exec, meta, namer, cfg.CacheDir)
 
 	ops := vfs.NewOperations(vfs.OperationsConfig{
+		CLI:      exec,
 		Tree:     tree,
 		Drive:    driveAdapter,
 		Wiki:     wikiAdapter,

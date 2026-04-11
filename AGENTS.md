@@ -19,7 +19,7 @@ LarkFS is a virtual filesystem that mounts Lark/Feishu cloud resources as local 
 - **File size** — keep files under 300 lines (ideal ~100). If a file grows beyond that, split it.
 - **No class abuse** — no inheritance, no deep type hierarchies.
 - **Comments** — only for non-obvious intent. Never narrate what the code does.
-- **Error handling** — always return errors, never panic in library code. Use `fmt.Errorf("context: %w", err)` for wrapping.
+- **Error handling** — always return errors, never panic in library code. Use `fmt.Errorf("context: %w", err)` for wrapping. When mount clients need behavior-specific handling, return/wrap typed sentinel errors instead of relying on string matching.
 
 ## Architecture Rules
 
@@ -55,6 +55,10 @@ cmd/larkfs → pkg/mount → pkg/vfs → pkg/adapter → pkg/doctype → pkg/cli
 
 10. **WebDAV file creation** — `OpenFile` supports `os.O_CREATE` flag. `Operations.Create` creates docx documents via `docs +create` in the parent folder, then `io.Copy` writes body content via `docs +update`.
 
+11. **FUSE errno mapping** — FUSE CRUD paths must not collapse all errors to `EIO`. VFS exposes `ErrReadOnly`, `ErrNotFound`, and `ErrUnsupported`; `pkg/mount/fuse.go` maps them to `EROFS`, `ENOENT`, and `ENOTSUP` so Finder, editors, and shell commands can react correctly. Unknown errors may still fall back to `EIO`.
+
+12. **Control paths are not resource paths** — `_meta/`, `_ops/`, `_queries/`, and `_views/` are control-plane nodes. `Create`, `Mkdir`, `Remove`, and `Rename` must reject these paths unless the operation is explicitly handled by `writeControlNode` / query / op execution. Do not let inherited domain names trigger remote Drive CRUD against control nodes.
+
 ### lark-cli Response Format
 
 All `lark-cli` API responses wrap data in a `data` field:
@@ -74,9 +78,9 @@ Always unmarshal into `struct { Data struct { ... } \`json:"data"\` }`. Never ex
 go test ./... -v -race -count=1
 ```
 
-Tests exist for: `pkg/cli`, `pkg/cache`, `pkg/naming`, `pkg/vfs`, `pkg/errors`. Tests do NOT call real APIs — they test pure logic (caching, naming, retry, tree structure, error classification, JSON param safety).
+Tests exist for: `pkg/cli`, `pkg/cache`, `pkg/naming`, `pkg/vfs`, `pkg/errors`, and selected adapter/mount behavior. Tests do NOT call real APIs — they test pure logic and mocked executor flows (caching, naming, retry, tree structure, control-node routing, error classification, JSON param safety, buffered writes).
 
-When adding a new feature, add tests for the pure-logic parts. Adapter and mount tests require mocking the executor (not yet implemented).
+When adding a new feature, add tests for the pure-logic parts. Adapter and mount tests should use mocked executors or VFS/mount fixtures, not real `lark-cli` network calls.
 
 ## Common Tasks
 
@@ -104,6 +108,7 @@ When adding a new feature, add tests for the pure-logic parts. Adapter and mount
 ## Files to Watch
 
 - `pkg/mount/common.go` — wiring center, all components assembled here
+- `pkg/mount/fuse.go` — FUSE server, buffered file handles, CRUD errno mapping
 - `pkg/mount/webdav.go` — WebDAV server, file creation, ContentTyper implementation
 - `pkg/vfs/operations.go` — routing hub for all read/write/list/create operations
 - `pkg/adapter/drive.go` — drive adapter with composite token routing (`resolveCompositeType`)

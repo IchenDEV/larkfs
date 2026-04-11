@@ -12,12 +12,12 @@ import (
 )
 
 type IMAdapter struct {
-	exec  *clipkg.Executor
+	exec  clipkg.Runner
 	meta  *cache.MetadataCache
 	namer *naming.Resolver
 }
 
-func NewIMAdapter(exec *clipkg.Executor, meta *cache.MetadataCache, namer *naming.Resolver) *IMAdapter {
+func NewIMAdapter(exec clipkg.Runner, meta *cache.MetadataCache, namer *naming.Resolver) *IMAdapter {
 	return &IMAdapter{exec: exec, meta: meta, namer: namer}
 }
 
@@ -26,23 +26,25 @@ type Chat struct {
 	Name   string `json:"name"`
 }
 
-func (a *IMAdapter) ListChats(ctx context.Context) ([]doctype.Entry, error) {
+func (a *IMAdapter) ListChats(ctx context.Context) (doctype.ListResult, error) {
 	if cached, ok := a.meta.Get("im:chats"); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
-	out, err := a.exec.Run(ctx, "im", "chats", "list", "--format", "json", "--page-all")
+	out, err := a.exec.Run(ctx, "im", "chats", "list", "--format", "json", "--page-all", "--page-limit", "0")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
 		Data struct {
-			Items []Chat `json:"items"`
+			Items      []Chat `json:"items"`
+			HasMore    bool   `json:"has_more"`
+			NextCursor string `json:"page_token"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var entries []doctype.Entry
@@ -68,27 +70,40 @@ func (a *IMAdapter) ListChats(ctx context.Context) ([]doctype.Entry, error) {
 		}
 	}
 
-	a.meta.Set("im:chats", entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			HasMore:    result.Data.HasMore,
+			NextCursor: result.Data.NextCursor,
+			WindowSize: len(entries),
+			SortKey:    "name",
+			Truncated:  result.Data.HasMore,
+		},
+	}
+	a.meta.Set("im:chats", list)
+	return list, nil
 }
 
-func (a *IMAdapter) ListChatContents(_ context.Context, chatID string) ([]doctype.Entry, error) {
-	return []doctype.Entry{
-		{Name: "latest.md", Token: chatID + "|latest", Type: doctype.TypeFile},
-		{Name: "_send.md", Token: chatID + "|send", Type: doctype.TypeFile},
-		{Name: "files", Token: chatID + "|files", Type: doctype.TypeFolder, IsDir: true},
+func (a *IMAdapter) ListChatContents(_ context.Context, chatID string) (doctype.ListResult, error) {
+	return doctype.ListResult{
+		Entries: []doctype.Entry{
+			{Name: "latest.md", Token: chatID + "|latest", Type: doctype.TypeFile},
+			{Name: "_send.md", Token: chatID + "|send", Type: doctype.TypeFile},
+			{Name: "files", Token: chatID + "|files", Type: doctype.TypeFolder, IsDir: true},
+		},
+		Page: doctype.PageInfo{WindowSize: 3, SortKey: "fixed"},
 	}, nil
 }
 
-func (a *IMAdapter) ListChatFiles(ctx context.Context, chatID string) ([]doctype.Entry, error) {
+func (a *IMAdapter) ListChatFiles(ctx context.Context, chatID string) (doctype.ListResult, error) {
 	cacheKey := "im:files:" + chatID
 	if cached, ok := a.meta.Get(cacheKey); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	out, err := a.exec.Run(ctx, "im", "+chat-messages-list", "--chat-id", chatID, "--format", "json")
 	if err != nil {
-		return nil, nil
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
@@ -101,7 +116,7 @@ func (a *IMAdapter) ListChatFiles(ctx context.Context, chatID string) ([]doctype
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, nil
+		return doctype.ListResult{}, err
 	}
 
 	var entries []doctype.Entry
@@ -123,8 +138,15 @@ func (a *IMAdapter) ListChatFiles(ctx context.Context, chatID string) ([]doctype
 		})
 	}
 
-	a.meta.Set(cacheKey, entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "message_id",
+		},
+	}
+	a.meta.Set(cacheKey, list)
+	return list, nil
 }
 
 func (a *IMAdapter) ReadMessages(ctx context.Context, chatID string) ([]byte, error) {

@@ -12,7 +12,7 @@
 
 ---
 
-将飞书/Lark 的 7 大业务域（Drive、Wiki、IM、Calendar、Tasks、Mail、Meetings）映射为本地可读写的文件目录。像操作本地文件一样操作云端资源。
+将飞书/Lark 的资源映射为本地可读写的文件目录。核心路径覆盖 Drive、Wiki、IM、Calendar、Tasks、Mail、Meetings，并通过控制节点补充 Approval、Base、Contact、Docs、Minutes、Sheets、VC、`_system` 等命令型能力。
 
 ## Why
 
@@ -25,13 +25,14 @@
 
 | 能力 | 说明 |
 |---|---|
-| **FUSE 挂载** | 完整 POSIX 语义，像本地目录一样 `ls / cat / vim / cp` |
+| **FUSE 挂载** | POSIX 风格语义，像本地目录一样 `ls / cat / vim / cp` |
 | **WebDAV 模式** | 无需内核模块，Finder / 文件管理器直连 |
 | **多类型文档** | docx → Markdown, sheet → 目录/CSV, bitable → 目录/JSONL, file → 原样下载 |
-| **7 大域** | Drive · Wiki · IM · Calendar · Tasks · Mail · Meetings |
+| **多域映射** | Drive · Wiki · IM · Calendar · Tasks · Mail · Meetings · Approval · Base · Contact · Docs · Minutes · Sheets · VC · `_system` |
 | **同名冲突解决** | 自动 `name~token` 后缀，持久化映射保证路径稳定 |
 | **三级缓存** | in-memory → 磁盘 LRU ContentCache → 远程拉取，TTL 自动过期 |
 | **重试 & 认证恢复** | API 限流自动指数退避，token 过期自动刷新 |
+| **清晰错误语义** | FUSE/WebDAV 会区分只读、未找到、不支持等错误，避免客户端只看到泛化 I/O error |
 | **守护进程** | 后台运行、PID 管理、优雅关闭、stale mount 自动清理 |
 | **跨平台** | macOS (macFUSE / Fuse-T) + Linux (FUSE3) |
 | **CI/CD** | GitHub Actions + GoReleaser 自动发布多平台二进制 |
@@ -184,8 +185,15 @@ larkfs unmount --all
 | `pkg/cache` | Metadata TTL cache + LRU disk content cache |
 | `pkg/naming` | Name conflict resolution with `~token` suffix + persistent mapping |
 | `pkg/daemon` | PID file, fork, health check, stale mount cleanup |
-| `pkg/errors` | Retry with exponential backoff, auth recovery, errno mapping |
+| `pkg/errors` | Retry with exponential backoff, auth recovery, CLI error to errno helpers |
 | `pkg/config` | Mount/Serve config structs, path resolution |
+
+## Filesystem Semantics
+
+- FUSE 和 WebDAV 写入都会先按文件句柄缓冲，正确处理 editor-style 的 offset write、truncate、append，并在 flush/close 时提交到 VFS。
+- CRUD 只会作用在真实资源节点上；`_meta/`、`_ops/`、`_queries/`、`_views/` 是控制面路径，不能被当成 Drive 文件夹误创建。
+- FUSE 会把 VFS 错误映射成更可消费的 errno：read-only → `EROFS`，not found → `ENOENT`，unsupported → `ENOTSUP`，未知错误才回退到 `EIO`。
+- Rename 不会做本地假成功：如果没有明确映射到远端 CLI 命令，操作会返回 unsupported，而不是只改内存里的名字等待下次刷新回滚。
 
 ## Development
 
@@ -240,7 +248,7 @@ All runtime state is stored in `~/.larkfs/`:
 | `--cache-dir` | `~/.larkfs/cache` | Cache directory |
 | `--metadata-ttl` | `60` | Metadata cache TTL (seconds) |
 | `--read-only` | `false` | Mount in read-only mode |
-| `--domains` | all 7 | Comma-separated enabled domains |
+| `--domains` | all supported domains | Comma-separated enabled domains |
 | `--lark-cli` | auto-detect | Path to lark-cli binary |
 | `--log-level` | `info` | Log level (debug/info/warn/error) |
 

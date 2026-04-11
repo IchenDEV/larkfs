@@ -13,18 +13,18 @@ import (
 )
 
 type MailAdapter struct {
-	exec  *clipkg.Executor
+	exec  clipkg.Runner
 	meta  *cache.MetadataCache
 	namer *naming.Resolver
 }
 
-func NewMailAdapter(exec *clipkg.Executor, meta *cache.MetadataCache, namer *naming.Resolver) *MailAdapter {
+func NewMailAdapter(exec clipkg.Runner, meta *cache.MetadataCache, namer *naming.Resolver) *MailAdapter {
 	return &MailAdapter{exec: exec, meta: meta, namer: namer}
 }
 
-func (a *MailAdapter) ListFolders(ctx context.Context) ([]doctype.Entry, error) {
+func (a *MailAdapter) ListFolders(ctx context.Context) (doctype.ListResult, error) {
 	if cached, ok := a.meta.Get("mail:folders"); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	params := clipkg.JSONParam(map[string]any{"user_mailbox_id": "me"})
@@ -33,9 +33,9 @@ func (a *MailAdapter) ListFolders(ctx context.Context) ([]doctype.Entry, error) 
 		"--params", params, "--format", "json")
 	if err != nil {
 		if strings.Contains(err.Error(), "1230002") || strings.Contains(err.Error(), "1230003") {
-			return nil, nil
+			return doctype.ListResult{}, nil
 		}
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
@@ -47,7 +47,7 @@ func (a *MailAdapter) ListFolders(ctx context.Context) ([]doctype.Entry, error) 
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	entries := make([]doctype.Entry, 0, len(result.Data.Items)+2)
@@ -64,19 +64,26 @@ func (a *MailAdapter) ListFolders(ctx context.Context) ([]doctype.Entry, error) 
 		doctype.Entry{Name: "_send.md", Token: "send", Type: doctype.TypeFile},
 	)
 
-	a.meta.Set("mail:folders", entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "name",
+		},
+	}
+	a.meta.Set("mail:folders", list)
+	return list, nil
 }
 
-func (a *MailAdapter) ListMessages(ctx context.Context, folder string) ([]doctype.Entry, error) {
+func (a *MailAdapter) ListMessages(ctx context.Context, folder string) (doctype.ListResult, error) {
 	cacheKey := "mail:messages:" + folder
 	if cached, ok := a.meta.Get(cacheKey); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	out, err := a.exec.Run(ctx, "mail", "+triage", "--folder", folder, "--format", "json")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
@@ -88,7 +95,7 @@ func (a *MailAdapter) ListMessages(ctx context.Context, folder string) ([]doctyp
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var entries []doctype.Entry
@@ -114,8 +121,15 @@ func (a *MailAdapter) ListMessages(ctx context.Context, folder string) ([]doctyp
 		}
 	}
 
-	a.meta.Set(cacheKey, entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "date",
+		},
+	}
+	a.meta.Set(cacheKey, list)
+	return list, nil
 }
 
 func (a *MailAdapter) ReadMessage(ctx context.Context, messageID string) ([]byte, error) {

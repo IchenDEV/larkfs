@@ -13,13 +13,13 @@ import (
 )
 
 type MeetingAdapter struct {
-	exec     *clipkg.Executor
+	exec     clipkg.Runner
 	meta     *cache.MetadataCache
 	namer    *naming.Resolver
 	cacheDir string
 }
 
-func NewMeetingAdapter(exec *clipkg.Executor, meta *cache.MetadataCache, namer *naming.Resolver, cacheDir string) *MeetingAdapter {
+func NewMeetingAdapter(exec clipkg.Runner, meta *cache.MetadataCache, namer *naming.Resolver, cacheDir string) *MeetingAdapter {
 	return &MeetingAdapter{exec: exec, meta: meta, namer: namer, cacheDir: cacheDir}
 }
 
@@ -29,7 +29,7 @@ type Meeting struct {
 	StartTime string `json:"start_time"`
 }
 
-func (a *MeetingAdapter) ListDateDirs() []doctype.Entry {
+func (a *MeetingAdapter) ListDateDirs() doctype.ListResult {
 	today := time.Now()
 	entries := make([]doctype.Entry, 0, 30)
 	for i := 0; i < 30; i++ {
@@ -42,18 +42,24 @@ func (a *MeetingAdapter) ListDateDirs() []doctype.Entry {
 			IsDir: true,
 		})
 	}
-	return entries
+	return doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "date_desc",
+		},
+	}
 }
 
-func (a *MeetingAdapter) ListMeetings(ctx context.Context, date string) ([]doctype.Entry, error) {
+func (a *MeetingAdapter) ListMeetings(ctx context.Context, date string) (doctype.ListResult, error) {
 	cacheKey := "meetings:" + date
 	if cached, ok := a.meta.Get(cacheKey); ok {
-		return cached.([]doctype.Entry), nil
+		return cached.(doctype.ListResult), nil
 	}
 
 	out, err := a.exec.Run(ctx, "vc", "+search", "--start", date, "--end", date, "--format", "json")
 	if err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var result struct {
@@ -62,7 +68,7 @@ func (a *MeetingAdapter) ListMeetings(ctx context.Context, date string) ([]docty
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
-		return nil, err
+		return doctype.ListResult{}, err
 	}
 
 	var entries []doctype.Entry
@@ -85,17 +91,30 @@ func (a *MeetingAdapter) ListMeetings(ctx context.Context, date string) ([]docty
 		}
 	}
 
-	a.meta.Set(cacheKey, entries)
-	return entries, nil
+	list := doctype.ListResult{
+		Entries: entries,
+		Page: doctype.PageInfo{
+			WindowSize: len(entries),
+			SortKey:    "topic",
+		},
+	}
+	a.meta.Set(cacheKey, list)
+	return list, nil
 }
 
-func (a *MeetingAdapter) ListMeetingContents(meetingID string) []doctype.Entry {
-	return []doctype.Entry{
-		{Name: "_meta.json", Token: meetingID + "|meta", Type: doctype.TypeFile},
-		{Name: "summary.md", Token: meetingID + "|summary", Type: doctype.TypeFile},
-		{Name: "todos.md", Token: meetingID + "|todos", Type: doctype.TypeFile},
-		{Name: "transcript.md", Token: meetingID + "|transcript", Type: doctype.TypeFile},
-		{Name: "recording.mp4", Token: meetingID + "|recording", Type: doctype.TypeFile},
+func (a *MeetingAdapter) ListMeetingContents(meetingID string) doctype.ListResult {
+	return doctype.ListResult{
+		Entries: []doctype.Entry{
+			{Name: "_meta.json", Token: meetingID + "|meta", Type: doctype.TypeFile},
+			{Name: "summary.md", Token: meetingID + "|summary", Type: doctype.TypeFile},
+			{Name: "todos.md", Token: meetingID + "|todos", Type: doctype.TypeFile},
+			{Name: "transcript.md", Token: meetingID + "|transcript", Type: doctype.TypeFile},
+			{Name: "recording.mp4", Token: meetingID + "|recording", Type: doctype.TypeFile},
+		},
+		Page: doctype.PageInfo{
+			WindowSize: 5,
+			SortKey:    "fixed",
+		},
 	}
 }
 

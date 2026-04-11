@@ -13,6 +13,11 @@ const defaultTimeout = 30 * time.Second
 
 type RunMiddleware func(ctx context.Context, fn func() ([]byte, error)) ([]byte, error)
 
+type Runner interface {
+	Path() string
+	Run(ctx context.Context, args ...string) ([]byte, error)
+}
+
 type Executor struct {
 	binaryPath string
 	timeout    time.Duration

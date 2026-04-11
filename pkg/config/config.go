@@ -70,7 +70,7 @@ func (c *MountConfig) Resolve() error {
 
 func (c *MountConfig) EnabledDomains() []string {
 	if c.Domains == "" {
-		return []string{"drive", "wiki", "im", "calendar", "tasks", "mail", "meetings"}
+		return []string{"drive", "wiki", "im", "calendar", "tasks", "mail", "meetings", "approval", "base", "contact", "docs", "minutes", "sheets", "vc", "_system"}
 	}
 	return strings.Split(c.Domains, ",")
 }

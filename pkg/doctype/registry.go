@@ -6,7 +6,7 @@ type Registry struct {
 	handlers map[DocType]TypeHandler
 }
 
-func NewRegistry(exec *cli.Executor, cacheDir string) *Registry {
+func NewRegistry(exec cli.Runner, cacheDir string) *Registry {
 	r := &Registry{handlers: make(map[DocType]TypeHandler)}
 	r.handlers[TypeDocx] = NewDocxHandler(exec)
 	r.handlers[TypeSheet] = NewSheetHandler(exec)

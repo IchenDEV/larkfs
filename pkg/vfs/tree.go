@@ -15,15 +15,44 @@ const (
 	NodeFile
 )
 
+type NodeKind string
+
+const (
+	NodeKindResource   NodeKind = "resource"
+	NodeKindControlDir NodeKind = "control_dir"
+	NodeKindControl    NodeKind = "control"
+)
+
+type ControlKind string
+
+const (
+	ControlNone        ControlKind = ""
+	ControlMetaDir     ControlKind = "meta_dir"
+	ControlOpsDir      ControlKind = "ops_dir"
+	ControlQueriesDir  ControlKind = "queries_dir"
+	ControlViewsDir    ControlKind = "views_dir"
+	ControlIndexFile   ControlKind = "index_file"
+	ControlCapsFile    ControlKind = "capabilities_file"
+	ControlRequestFile ControlKind = "request_file"
+	ControlResultFile  ControlKind = "result_file"
+	ControlViewDir     ControlKind = "view_dir"
+	ControlViewFile    ControlKind = "view_file"
+)
+
 type VNode struct {
 	Name        string
 	Token       string
 	DocType     doctype.DocType
 	NodeType    NodeType
+	Kind        NodeKind
+	Control     ControlKind
 	Domain      string
 	Size        int64
 	ModTime     time.Time
 	CreatedTime time.Time
+	Page        doctype.PageInfo
+	TargetPath  string
+	Action      string
 
 	mu          sync.RWMutex
 	children    map[string]*VNode
@@ -35,6 +64,7 @@ func NewRootNode() *VNode {
 	return &VNode{
 		Name:     "",
 		NodeType: NodeDir,
+		Kind:     NodeKindResource,
 		children: make(map[string]*VNode),
 		ModTime:  time.Now(),
 	}
@@ -114,24 +144,71 @@ func NewTree(domains []string) *Tree {
 		domainNode := &VNode{
 			Name:     domain,
 			NodeType: NodeDir,
+			Kind:     NodeKindResource,
 			Domain:   domain,
 			children: make(map[string]*VNode),
 			ModTime:  time.Now(),
 		}
+		addControlNodes(domainNode, "/"+domain)
 		if domain == "calendar" || domain == "tasks" {
 			domainNode.AddChild(&VNode{
-				Name:     "_create.md",
-				Token:    "_create",
-				NodeType: NodeFile,
-				Domain:   domain,
-				ModTime:  time.Now(),
-				children: make(map[string]*VNode),
+				Name:       "_create.md",
+				Token:      "_create",
+				NodeType:   NodeFile,
+				Kind:       NodeKindResource,
+				Domain:     domain,
+				TargetPath: "/" + domain,
+				ModTime:    time.Now(),
+				children:   make(map[string]*VNode),
 			})
 		}
 		root.AddChild(domainNode)
 	}
 	root.SetPopulated()
 	return &Tree{root: root}
+}
+
+func addControlNodes(parent *VNode, targetPath string) {
+	parent.AddChild(&VNode{
+		Name:       "_meta",
+		NodeType:   NodeDir,
+		Kind:       NodeKindControlDir,
+		Control:    ControlMetaDir,
+		Domain:     parent.Domain,
+		TargetPath: targetPath,
+		ModTime:    time.Now(),
+		children:   make(map[string]*VNode),
+	})
+	parent.AddChild(&VNode{
+		Name:       "_ops",
+		NodeType:   NodeDir,
+		Kind:       NodeKindControlDir,
+		Control:    ControlOpsDir,
+		Domain:     parent.Domain,
+		TargetPath: targetPath,
+		ModTime:    time.Now(),
+		children:   make(map[string]*VNode),
+	})
+	parent.AddChild(&VNode{
+		Name:       "_queries",
+		NodeType:   NodeDir,
+		Kind:       NodeKindControlDir,
+		Control:    ControlQueriesDir,
+		Domain:     parent.Domain,
+		TargetPath: targetPath,
+		ModTime:    time.Now(),
+		children:   make(map[string]*VNode),
+	})
+	parent.AddChild(&VNode{
+		Name:       "_views",
+		NodeType:   NodeDir,
+		Kind:       NodeKindControlDir,
+		Control:    ControlViewsDir,
+		Domain:     parent.Domain,
+		TargetPath: targetPath,
+		ModTime:    time.Now(),
+		children:   make(map[string]*VNode),
+	})
 }
 
 func (t *Tree) Root() *VNode {

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var allDomains = []string{"drive", "wiki", "im", "calendar", "tasks", "mail", "meetings"}
+var allDomains = []string{"drive", "wiki", "im", "calendar", "tasks", "mail", "meetings", "approval", "base", "contact", "docs", "minutes", "sheets", "vc", "_system"}
 
 func TestTreeResolve(t *testing.T) {
 	tree := NewTree(allDomains)
@@ -170,6 +170,16 @@ func TestNewTreeDriveNoCreateNode(t *testing.T) {
 	node := tree.Resolve("/drive/_create.md")
 	if node != nil {
 		t.Error("drive should not have _create.md")
+	}
+}
+
+func TestNewTreeAddsControlNodes(t *testing.T) {
+	tree := NewTree([]string{"docs"})
+
+	for _, p := range []string{"/docs/_meta", "/docs/_ops", "/docs/_queries", "/docs/_views"} {
+		if tree.Resolve(p) == nil {
+			t.Fatalf("expected %s to exist", p)
+		}
 	}
 }
 
