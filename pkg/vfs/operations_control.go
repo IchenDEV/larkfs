@@ -21,10 +21,9 @@ type execRequest struct {
 }
 
 type actionSpec struct {
-	args      []string
-	queryArg  string
-	pageAll   bool
-	rawDomain bool
+	args     []string
+	queryArg string
+	pageAll  bool
 }
 
 func (o *Operations) ensureControlChildren(node *VNode) {
