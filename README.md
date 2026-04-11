@@ -204,7 +204,7 @@ make build
 # Run tests
 make test
 
-# Coverage across production packages
+# Unit coverage across production packages
 make test-cover
 
 # Lint
@@ -219,6 +219,8 @@ make dev-unmount
 # Clean
 make clean
 ```
+
+Tests live under each module's `test/` subdirectory, so they do not sit flat beside implementation files. `make test-cover` runs the full suite and reports coverage for the pure unit-testable production packages; CLI subprocess and mount boundary behavior is still tested, but `cmd/larkfs` and `pkg/mount` are not included in the unit coverage denominator to avoid test-only hooks or same-package white-box tests.
 
 ### Release
 

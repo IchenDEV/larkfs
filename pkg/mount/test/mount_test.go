@@ -30,6 +30,37 @@ func TestWebDAVServerServeAndCloseBlackbox(t *testing.T) {
 	server.Close()
 }
 
+func TestWebDAVServerMissingCLIBlackbox(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	_, err := mount.NewWebDAVServer(config.ServeConfig{
+		LogLevel:    "error",
+		Domains:     "contact",
+		LarkCLIPath: filepath.Join(home, "missing-lark-cli"),
+	})
+	if err == nil {
+		t.Fatal("NewWebDAVServer() expected missing cli error")
+	}
+}
+
+func TestWebDAVServerBuildsWithSelectedDomainsBlackbox(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cliPath := filepath.Join(home, "lark-cli")
+	if err := os.WriteFile(cliPath, []byte("#!/bin/sh\nprintf '{}'\n"), 0o755); err != nil {
+		t.Fatalf("write fake cli: %v", err)
+	}
+	server, err := mount.NewWebDAVServer(config.ServeConfig{
+		LogLevel:    "error",
+		Domains:     "contact,docs",
+		LarkCLIPath: cliPath,
+	})
+	if err != nil {
+		t.Fatalf("NewWebDAVServer() error: %v", err)
+	}
+	server.Close()
+}
+
 func TestFUSEServerMissingCLIBlackbox(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)

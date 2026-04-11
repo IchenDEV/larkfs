@@ -10,7 +10,7 @@ test:
 	go test ./... -v -race -count=1
 
 test-cover:
-	@pkgs=$$(go list ./... | grep -v '/test$$' | grep -v '/tests/testutil$$' | paste -sd, -); \
+	@pkgs=$$(go list ./... | grep -v '/test$$' | grep -v '/tests/testutil$$' | grep -v '/cmd/larkfs$$' | grep -v '/pkg/mount$$' | paste -sd, -); \
 	go test -coverpkg="$$pkgs" ./... -coverprofile=coverage.out; \
 	go tool cover -func=coverage.out | tail -n 1
 
