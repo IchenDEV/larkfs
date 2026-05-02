@@ -27,6 +27,7 @@
 |---|---|
 | **FUSE 挂载** | POSIX 风格语义，像本地目录一样 `ls / cat / vim / cp` |
 | **WebDAV 模式** | 无需内核模块，Finder / 文件管理器直连 |
+| **macOS Desktop app（预览）** | SwiftUI 宿主 app，汇总认证/挂载/健康状态，并开始接入 File Provider 原生挂载 |
 | **多类型文档** | docx → Markdown, sheet → 目录/CSV, bitable → 目录/JSONL, file → 原样下载 |
 | **多域映射** | Drive · Wiki · IM · Calendar · Tasks · Mail · Meetings · Approval · Base · Contact · Docs · Minutes · Sheets · VC · `_system` |
 | **同名冲突解决** | 自动 `name~token` 后缀，持久化映射保证路径稳定 |
@@ -98,6 +99,22 @@ larkfs unmount ~/lark
 # 卸载全部
 larkfs unmount --all
 ```
+
+### Desktop App Preview
+
+macOS 仓库内现在带了一个 SwiftUI 宿主 app，用来读取 `larkfs` 的 JSON 状态输出，并承接后续 `File Provider` 原生挂载方案：
+
+```bash
+./script/build_and_run.sh
+```
+
+仓库里也已经有 File Provider 的起步代码：`larkfs native item/list/fetch` 提供只读 bridge，`apps/LarkFSDesktop/FileProviderExtension` 提供可编译的 `NSFileProviderReplicatedExtension`。脚本会优先用 Xcode project 构建带 `.appex` 的 app；要让 Finder 接受插件，需要本机有 Apple Development / Developer ID 签名身份：
+
+```bash
+LARKFS_DEVELOPMENT_TEAM=<TEAM_ID> ./script/build_and_run.sh
+```
+
+更多设计说明见 [docs/macos-native-mount.md](./docs/macos-native-mount.md)。
 
 ## Directory Layout
 
@@ -191,6 +208,9 @@ larkfs unmount --all
 ## Filesystem Semantics
 
 - FUSE 和 WebDAV 写入都会先按文件句柄缓冲，正确处理 editor-style 的 offset write、truncate、append，并在 flush/close 时提交到 VFS。
+- 普通二进制文件支持下载，以及“新建后首次写入即上传”；普通路径上的再次覆盖写入仍会返回 `unsupported`，避免静默变成“删了再传一份”。
+- 如果你明确要替换已有 Drive 普通文件，请写 `/_ops/replace.request.json`：指定 `target_path`，再提供 `flags.file_path` 或 `data.content_base64` / `data.content`，结果里会返回新旧 token。
+- 目录里也会为普通 Drive 文件生成就近入口，比如 `blob.bin._replace.request.json`；这条路径已经带好目标文件，直接写替换请求就行。
 - CRUD 只会作用在真实资源节点上；`_meta/`、`_ops/`、`_queries/`、`_views/` 是控制面路径，不能被当成 Drive 文件夹误创建。
 - FUSE 会把 VFS 错误映射成更可消费的 errno：read-only → `EROFS`，not found → `ENOENT`，unsupported → `ENOTSUP`，未知错误才回退到 `EIO`。
 - Rename 不会做本地假成功：如果没有明确映射到远端 CLI 命令，操作会返回 unsupported，而不是只改内存里的名字等待下次刷新回滚。
@@ -251,6 +271,7 @@ All runtime state is stored in `~/.larkfs/`:
 |---|---|---|
 | `--daemon, -d` | `false` | Run as background daemon |
 | `--cache-dir` | `~/.larkfs/cache` | Cache directory |
+| `--cache-size` | `500MB` | Disk content cache size limit |
 | `--metadata-ttl` | `60` | Metadata cache TTL (seconds) |
 | `--read-only` | `false` | Mount in read-only mode |
 | `--domains` | all supported domains | Comma-separated enabled domains |

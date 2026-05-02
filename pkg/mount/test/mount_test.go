@@ -61,6 +61,24 @@ func TestWebDAVServerBuildsWithSelectedDomainsBlackbox(t *testing.T) {
 	server.Close()
 }
 
+func TestWebDAVServerRejectsInvalidCacheSizeBlackbox(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cliPath := filepath.Join(home, "lark-cli")
+	if err := os.WriteFile(cliPath, []byte("#!/bin/sh\nprintf '{}'\n"), 0o755); err != nil {
+		t.Fatalf("write fake cli: %v", err)
+	}
+	_, err := mount.NewWebDAVServer(config.ServeConfig{
+		LogLevel:    "error",
+		Domains:     "contact",
+		LarkCLIPath: cliPath,
+		CacheSize:   "invalid",
+	})
+	if err == nil {
+		t.Fatal("NewWebDAVServer() expected invalid cache size error")
+	}
+}
+
 func TestFUSEServerMissingCLIBlackbox(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
@@ -73,5 +91,25 @@ func TestFUSEServerMissingCLIBlackbox(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("NewFUSEServer() expected missing cli error")
+	}
+}
+
+func TestFUSEServerRejectsInvalidCacheSizeBlackbox(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cliPath := filepath.Join(home, "lark-cli")
+	if err := os.WriteFile(cliPath, []byte("#!/bin/sh\nprintf '{}'\n"), 0o755); err != nil {
+		t.Fatalf("write fake cli: %v", err)
+	}
+	_, err := mount.NewFUSEServer(config.MountConfig{
+		Mountpoint:  filepath.Join(home, "mnt"),
+		CacheDir:    filepath.Join(home, "cache"),
+		CacheSize:   "invalid",
+		LarkCLIPath: cliPath,
+		MetadataTTL: 60,
+		Domains:     "contact",
+	})
+	if err == nil {
+		t.Fatal("NewFUSEServer() expected invalid cache size error")
 	}
 }

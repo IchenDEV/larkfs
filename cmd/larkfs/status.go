@@ -10,6 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type statusMount struct {
+	PID        int      `json:"pid"`
+	Mountpoint string   `json:"mountpoint"`
+	Backend    string   `json:"backend"`
+	StartedAt  string   `json:"started_at"`
+	Domains    []string `json:"domains"`
+	LogFile    string   `json:"log_file,omitempty"`
+	Uptime     string   `json:"uptime"`
+	Status     string   `json:"status"`
+}
+
 func newStatusCmd() *cobra.Command {
 	var jsonOutput bool
 
@@ -23,6 +34,9 @@ func newStatusCmd() *cobra.Command {
 			}
 
 			if len(mounts) == 0 {
+				if jsonOutput {
+					return json.NewEncoder(os.Stdout).Encode([]statusMount{})
+				}
 				fmt.Println("No active mounts.")
 				return nil
 			}
@@ -30,7 +44,7 @@ func newStatusCmd() *cobra.Command {
 			if jsonOutput {
 				enc := json.NewEncoder(os.Stdout)
 				enc.SetIndent("", "  ")
-				return enc.Encode(mounts)
+				return enc.Encode(statusMounts(mounts))
 			}
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
@@ -45,4 +59,21 @@ func newStatusCmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "Output as JSON")
 	return cmd
+}
+
+func statusMounts(mounts []daemon.PIDInfo) []statusMount {
+	items := make([]statusMount, 0, len(mounts))
+	for _, mount := range mounts {
+		items = append(items, statusMount{
+			PID:        mount.PID,
+			Mountpoint: mount.Mountpoint,
+			Backend:    mount.Backend,
+			StartedAt:  mount.StartedAt.Format("2006-01-02T15:04:05.999999999Z07:00"),
+			Domains:    mount.Domains,
+			LogFile:    mount.LogFile,
+			Uptime:     mount.Uptime(),
+			Status:     mount.Status(),
+		})
+	}
+	return items
 }

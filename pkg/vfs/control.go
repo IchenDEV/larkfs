@@ -29,6 +29,12 @@ func (s *controlStore) Set(path string, data []byte) {
 	s.content[path] = append([]byte(nil), data...)
 }
 
+func (s *controlStore) Delete(path string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.content, path)
+}
+
 func newControlFile(parent *VNode, name string, control ControlKind, action string) *VNode {
 	return &VNode{
 		Name:       name,
@@ -41,6 +47,12 @@ func newControlFile(parent *VNode, name string, control ControlKind, action stri
 		ModTime:    time.Now(),
 		children:   make(map[string]*VNode),
 	}
+}
+
+func newTargetedControlFile(parent *VNode, name string, control ControlKind, action, targetPath string) *VNode {
+	node := newControlFile(parent, name, control, action)
+	node.TargetPath = targetPath
+	return node
 }
 
 func newControlDir(parent *VNode, name string, control ControlKind, action string) *VNode {

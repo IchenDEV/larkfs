@@ -73,6 +73,9 @@ func TestVFSControlActionsAcrossDomainsBlackbox(t *testing.T) {
 				}
 				continue
 			}
+			if domain == "drive" && node.Name == "replace.request.json" {
+				continue
+			}
 			result, err := ops.ExecuteOp(context.Background(), path, []byte(`{"flags":{"token":"tok"},"params":{"page_size":1},"data":{"sample":true}}`))
 			if domain == "meetings" && err != nil {
 				continue

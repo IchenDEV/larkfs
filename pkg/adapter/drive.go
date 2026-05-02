@@ -122,3 +122,24 @@ func (a *DriveAdapter) Delete(ctx context.Context, token string, dt doctype.DocT
 	}
 	return err
 }
+
+func (a *DriveAdapter) ReplaceFile(ctx context.Context, parentToken, oldToken, name string, data []byte) (string, error) {
+	newToken, err := a.Create(ctx, parentToken, name, doctype.TypeFile, data)
+	if err != nil {
+		return "", err
+	}
+	if err := a.Delete(ctx, oldToken, doctype.TypeFile); err != nil {
+		return "", fmt.Errorf("delete old drive file: %w", err)
+	}
+	return newToken, nil
+}
+
+func (a *DriveAdapter) Rename(ctx context.Context, token, newTitle string) error {
+	params := clipkg.JSONParam(map[string]any{"file_token": token})
+	data := clipkg.JSONParam(map[string]any{"new_title": newTitle})
+	_, err := a.exec.Run(ctx, "drive", "files", "patch", "--params", params, "--data", data)
+	if err == nil {
+		a.meta.InvalidatePrefix("drive:")
+	}
+	return err
+}

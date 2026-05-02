@@ -1,0 +1,599 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2788F189F6D12B6A6236424E /* MountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5CB76760DD12945B8B6E20 /* MountsView.swift */; };
+		2F555D8C6071825F29FB6A0B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF348F30D58A3A0281AFE541 /* AppDelegate.swift */; };
+		38FCF3FDAFDA5E3B3056C4A6 /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB763CD6E945188AA48F2F4 /* DashboardModels.swift */; };
+		3DA26B0393E41F78B6E45D1E /* AppIconDark.icns in Resources */ = {isa = PBXBuildFile; fileRef = 89989A8AA3403535BAC5B42A /* AppIconDark.icns */; };
+		4866A4682C1ED4A37F51D25A /* NativeBridgeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCC3868C3468C9ADAA341E4 /* NativeBridgeModels.swift */; };
+		4C9FC80B2F9013F656D95582 /* BundlePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61424F4857DAC39690896643 /* BundlePaths.swift */; };
+		57B9F8141E71C4725AA832D5 /* AppIconAppearanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B06C8062CDAC48158C876710 /* AppIconAppearanceService.swift */; };
+		5DD02BCD7E3E05297CF66292 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = BCF1B00A2D2D33B071607CCA /* AppIcon.icns */; };
+		5FD1588892728A939DAEDAB0 /* LarkFSCLIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C194F3389D1214FBD394C8 /* LarkFSCLIService.swift */; };
+		62D6DAA2CF2358D488129480 /* NativeMountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291E90D488BFBB4584ACB39B /* NativeMountView.swift */; };
+		63942C3903284DFE1167388B /* NativeBridgeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCC3868C3468C9ADAA341E4 /* NativeBridgeModels.swift */; };
+		6A5D7A868095B668FD4A0927 /* LarkFSNativeBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9041319870A42D868D9C79D1 /* LarkFSNativeBridge.swift */; };
+		75D2C7E95E37AE3509252EC5 /* CLICommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC9623DF2E63EEE034DCE337 /* CLICommandRunner.swift */; };
+		814EBA1D374BCCB72523DD8B /* LarkFSNativeBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9041319870A42D868D9C79D1 /* LarkFSNativeBridge.swift */; };
+		874EB0DE2A7883CE940D4E42 /* LarkFSFileProviderExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE5CCA4FC87DDDF7182D05D8 /* LarkFSFileProviderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8D513739CB6ABDDEFD7EDECB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 094981429859F771F3052EBC /* Cocoa.framework */; };
+		99AADC8F2C6EC3E14FB46D22 /* LarkFSFileProviderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7643DDB14BAF80482752F11 /* LarkFSFileProviderItem.swift */; };
+		A1ED34725AC7B18AD3EF18A5 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC322E287E4330B0E3EE43B /* OverviewView.swift */; };
+		A5FEE6A0D753E2B6BF9548FC /* DashboardComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78BD80ED2A540F092FDDAE5C /* DashboardComponents.swift */; };
+		AA4D15864708F42DA6808F3B /* LarkFSFileProviderExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA25331B372D1F4811E89283 /* LarkFSFileProviderExtension.swift */; };
+		AC7AF2A4C1F3D63D405F3D88 /* LarkFSFileProviderEnumerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FDA8793672078ABBA5050AC /* LarkFSFileProviderEnumerator.swift */; };
+		B2AB7FB9D2B9A76591061F98 /* DashboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2264F9158DBAE5AB322A3A /* DashboardStore.swift */; };
+		BF8C19232605CC8407103035 /* NativeFileProviderDomainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 816A708C81E18FF025DB4EC0 /* NativeFileProviderDomainService.swift */; };
+		D51B4E5AC1F023E1D41CFB7D /* FileProviderSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E22F1503CAC3BB72610D6E /* FileProviderSupport.swift */; };
+		D7F41600DD1E25864ED0C513 /* AppIconDark.png in Resources */ = {isa = PBXBuildFile; fileRef = 71123115321CECF85B6A2836 /* AppIconDark.png */; };
+		DB42402BBAD013E9811140B1 /* NativeMountCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD06AA7C5C4E22ED45C40B74 /* NativeMountCapability.swift */; };
+		DC6B7D7AA8AB1ACB4C3C72D5 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BED5443DE87B9F3383E1E18 /* SidebarView.swift */; };
+		E5001E537D52885098B5AE3A /* AppIconLight.png in Resources */ = {isa = PBXBuildFile; fileRef = 290716B7EFD22707F3DF5207 /* AppIconLight.png */; };
+		E89CB63629C303AD9F1AA859 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 094981429859F771F3052EBC /* Cocoa.framework */; };
+		EDCEA8E7114FED4D84D199BE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160C2BD41BCAA3E366C55A74 /* ContentView.swift */; };
+		FA23DA63FC39357FCD5088D8 /* LarkFSDesktopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A8919AFDD6903A069BD74F2 /* LarkFSDesktopApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4F181D5FE91D20F274E696A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FED2608EACFC1154E9DFB210 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6058E65875EC520507FA45EA;
+			remoteInfo = LarkFSFileProviderExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D926B3F3DF7D3ED5AC68789E /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				874EB0DE2A7883CE940D4E42 /* LarkFSFileProviderExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		094981429859F771F3052EBC /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		0F5D0C1DE0E25863C07A77DB /* LarkFSDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LarkFSDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		160C2BD41BCAA3E366C55A74 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Views/ContentView.swift; sourceTree = "<group>"; };
+		290716B7EFD22707F3DF5207 /* AppIconLight.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; name = AppIconLight.png; path = Resources/AppIconLight.png; sourceTree = "<group>"; };
+		291E90D488BFBB4584ACB39B /* NativeMountView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NativeMountView.swift; path = Views/NativeMountView.swift; sourceTree = "<group>"; };
+		2FDA8793672078ABBA5050AC /* LarkFSFileProviderEnumerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSFileProviderEnumerator.swift; path = FileProviderExtension/LarkFSFileProviderEnumerator.swift; sourceTree = "<group>"; };
+		3BED5443DE87B9F3383E1E18 /* SidebarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SidebarView.swift; path = Views/SidebarView.swift; sourceTree = "<group>"; };
+		61424F4857DAC39690896643 /* BundlePaths.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BundlePaths.swift; path = Support/BundlePaths.swift; sourceTree = "<group>"; };
+		61C194F3389D1214FBD394C8 /* LarkFSCLIService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSCLIService.swift; path = Services/LarkFSCLIService.swift; sourceTree = "<group>"; };
+		71123115321CECF85B6A2836 /* AppIconDark.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; name = AppIconDark.png; path = Resources/AppIconDark.png; sourceTree = "<group>"; };
+		78BD80ED2A540F092FDDAE5C /* DashboardComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardComponents.swift; path = Views/DashboardComponents.swift; sourceTree = "<group>"; };
+		816A708C81E18FF025DB4EC0 /* NativeFileProviderDomainService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NativeFileProviderDomainService.swift; path = Services/NativeFileProviderDomainService.swift; sourceTree = "<group>"; };
+		84E22F1503CAC3BB72610D6E /* FileProviderSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileProviderSupport.swift; path = FileProviderExtension/FileProviderSupport.swift; sourceTree = "<group>"; };
+		89989A8AA3403535BAC5B42A /* AppIconDark.icns */ = {isa = PBXFileReference; includeInIndex = 1; name = AppIconDark.icns; path = Resources/AppIconDark.icns; sourceTree = "<group>"; };
+		8A8919AFDD6903A069BD74F2 /* LarkFSDesktopApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSDesktopApp.swift; path = App/LarkFSDesktopApp.swift; sourceTree = "<group>"; };
+		9041319870A42D868D9C79D1 /* LarkFSNativeBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSNativeBridge.swift; path = NativeBridge/LarkFSNativeBridge.swift; sourceTree = "<group>"; };
+		AA25331B372D1F4811E89283 /* LarkFSFileProviderExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSFileProviderExtension.swift; path = FileProviderExtension/LarkFSFileProviderExtension.swift; sourceTree = "<group>"; };
+		B06C8062CDAC48158C876710 /* AppIconAppearanceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppIconAppearanceService.swift; path = Support/AppIconAppearanceService.swift; sourceTree = "<group>"; };
+		BC5CB76760DD12945B8B6E20 /* MountsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MountsView.swift; path = Views/MountsView.swift; sourceTree = "<group>"; };
+		BCF1B00A2D2D33B071607CCA /* AppIcon.icns */ = {isa = PBXFileReference; includeInIndex = 1; name = AppIcon.icns; path = Resources/AppIcon.icns; sourceTree = "<group>"; };
+		BD06AA7C5C4E22ED45C40B74 /* NativeMountCapability.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NativeMountCapability.swift; path = Services/NativeMountCapability.swift; sourceTree = "<group>"; };
+		BEC322E287E4330B0E3EE43B /* OverviewView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OverviewView.swift; path = Views/OverviewView.swift; sourceTree = "<group>"; };
+		BF2264F9158DBAE5AB322A3A /* DashboardStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardStore.swift; path = Stores/DashboardStore.swift; sourceTree = "<group>"; };
+		C7643DDB14BAF80482752F11 /* LarkFSFileProviderItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSFileProviderItem.swift; path = FileProviderExtension/LarkFSFileProviderItem.swift; sourceTree = "<group>"; };
+		CEB763CD6E945188AA48F2F4 /* DashboardModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardModels.swift; path = Models/DashboardModels.swift; sourceTree = "<group>"; };
+		EC9623DF2E63EEE034DCE337 /* CLICommandRunner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CLICommandRunner.swift; path = Services/CLICommandRunner.swift; sourceTree = "<group>"; };
+		EF348F30D58A3A0281AFE541 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = App/AppDelegate.swift; sourceTree = "<group>"; };
+		EFCC3868C3468C9ADAA341E4 /* NativeBridgeModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NativeBridgeModels.swift; path = NativeBridge/NativeBridgeModels.swift; sourceTree = "<group>"; };
+		FE5CCA4FC87DDDF7182D05D8 /* LarkFSFileProviderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LarkFSFileProviderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		511ACD75EA59A70BBA8F341E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E89CB63629C303AD9F1AA859 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CBC29E26AC15455E6607BA9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D513739CB6ABDDEFD7EDECB /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		13A6C000CB2B2D653DA5693A = {
+			isa = PBXGroup;
+			children = (
+				84319F0EC037BC24B8D3864A /* Products */,
+				5C300053F2D18E17EF06161E /* Frameworks */,
+				EF348F30D58A3A0281AFE541 /* AppDelegate.swift */,
+				8A8919AFDD6903A069BD74F2 /* LarkFSDesktopApp.swift */,
+				CEB763CD6E945188AA48F2F4 /* DashboardModels.swift */,
+				EC9623DF2E63EEE034DCE337 /* CLICommandRunner.swift */,
+				61C194F3389D1214FBD394C8 /* LarkFSCLIService.swift */,
+				816A708C81E18FF025DB4EC0 /* NativeFileProviderDomainService.swift */,
+				BD06AA7C5C4E22ED45C40B74 /* NativeMountCapability.swift */,
+				BF2264F9158DBAE5AB322A3A /* DashboardStore.swift */,
+				B06C8062CDAC48158C876710 /* AppIconAppearanceService.swift */,
+				61424F4857DAC39690896643 /* BundlePaths.swift */,
+				160C2BD41BCAA3E366C55A74 /* ContentView.swift */,
+				78BD80ED2A540F092FDDAE5C /* DashboardComponents.swift */,
+				BC5CB76760DD12945B8B6E20 /* MountsView.swift */,
+				291E90D488BFBB4584ACB39B /* NativeMountView.swift */,
+				BEC322E287E4330B0E3EE43B /* OverviewView.swift */,
+				3BED5443DE87B9F3383E1E18 /* SidebarView.swift */,
+				9041319870A42D868D9C79D1 /* LarkFSNativeBridge.swift */,
+				EFCC3868C3468C9ADAA341E4 /* NativeBridgeModels.swift */,
+				84E22F1503CAC3BB72610D6E /* FileProviderSupport.swift */,
+				2FDA8793672078ABBA5050AC /* LarkFSFileProviderEnumerator.swift */,
+				AA25331B372D1F4811E89283 /* LarkFSFileProviderExtension.swift */,
+				C7643DDB14BAF80482752F11 /* LarkFSFileProviderItem.swift */,
+				BCF1B00A2D2D33B071607CCA /* AppIcon.icns */,
+				89989A8AA3403535BAC5B42A /* AppIconDark.icns */,
+				290716B7EFD22707F3DF5207 /* AppIconLight.png */,
+				71123115321CECF85B6A2836 /* AppIconDark.png */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		5C300053F2D18E17EF06161E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				66D5E144891FB06CAC7C4042 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		66D5E144891FB06CAC7C4042 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				094981429859F771F3052EBC /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		84319F0EC037BC24B8D3864A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0F5D0C1DE0E25863C07A77DB /* LarkFSDesktop.app */,
+				FE5CCA4FC87DDDF7182D05D8 /* LarkFSFileProviderExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6058E65875EC520507FA45EA /* LarkFSFileProviderExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C5529C9FCB2EBA8A7849BFC7 /* Build configuration list for PBXNativeTarget "LarkFSFileProviderExtension" */;
+			buildPhases = (
+				2E6DA503D5D48A5876E506AD /* Sources */,
+				511ACD75EA59A70BBA8F341E /* Frameworks */,
+				31B421BA604FFFA29FCC0688 /* Resources */,
+				51103AFB2CCAAC22F7CC2EE5 /* Copy larkfs bridge */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LarkFSFileProviderExtension;
+			productName = LarkFSFileProviderExtension;
+			productReference = FE5CCA4FC87DDDF7182D05D8 /* LarkFSFileProviderExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		A19F4B36A567CFC693E1D977 /* LarkFSDesktop */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB48F641A76255FD8B9FA041 /* Build configuration list for PBXNativeTarget "LarkFSDesktop" */;
+			buildPhases = (
+				5D7AAD68BD8A6092D98AB9F0 /* Sources */,
+				7CBC29E26AC15455E6607BA9 /* Frameworks */,
+				992D26A5D440BC89858FC26F /* Resources */,
+				4D88DEB4DEC7F6033273B9A0 /* Copy larkfs bridge */,
+				D926B3F3DF7D3ED5AC68789E /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B15911A6E333E1AD14FE55BB /* PBXTargetDependency */,
+			);
+			name = LarkFSDesktop;
+			productName = LarkFSDesktop;
+			productReference = 0F5D0C1DE0E25863C07A77DB /* LarkFSDesktop.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FED2608EACFC1154E9DFB210 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = B109E3FC8AFC534F9FB3DB8E /* Build configuration list for PBXProject "LarkFSDesktop" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 13A6C000CB2B2D653DA5693A;
+			minimizedProjectReferenceProxies = 0;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 84319F0EC037BC24B8D3864A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A19F4B36A567CFC693E1D977 /* LarkFSDesktop */,
+				6058E65875EC520507FA45EA /* LarkFSFileProviderExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		31B421BA604FFFA29FCC0688 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		992D26A5D440BC89858FC26F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5DD02BCD7E3E05297CF66292 /* AppIcon.icns in Resources */,
+				3DA26B0393E41F78B6E45D1E /* AppIconDark.icns in Resources */,
+				E5001E537D52885098B5AE3A /* AppIconLight.png in Resources */,
+				D7F41600DD1E25864ED0C513 /* AppIconDark.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4D88DEB4DEC7F6033273B9A0 /* Copy larkfs bridge */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy larkfs bridge";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/bin/larkfs",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nROOT_DIR=\"$(cd \"$SRCROOT/../..\" && pwd)\"\nBRIDGE=\"$ROOT_DIR/bin/larkfs\"\nDEST_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/bin\"\n\nmkdir -p \"$ROOT_DIR/bin\" \"$DEST_DIR\"\n(cd \"$ROOT_DIR\" && go build -o \"$BRIDGE\" ./cmd/larkfs)\n\ncp \"$BRIDGE\" \"$DEST_DIR/larkfs\"\nchmod +x \"$DEST_DIR/larkfs\"\n";
+		};
+		51103AFB2CCAAC22F7CC2EE5 /* Copy larkfs bridge */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy larkfs bridge";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/bin/larkfs",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nROOT_DIR=\"$(cd \"$SRCROOT/../..\" && pwd)\"\nBRIDGE=\"$ROOT_DIR/bin/larkfs\"\nDEST_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/bin\"\n\nmkdir -p \"$ROOT_DIR/bin\" \"$DEST_DIR\"\n(cd \"$ROOT_DIR\" && go build -o \"$BRIDGE\" ./cmd/larkfs)\n\ncp \"$BRIDGE\" \"$DEST_DIR/larkfs\"\nchmod +x \"$DEST_DIR/larkfs\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2E6DA503D5D48A5876E506AD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D51B4E5AC1F023E1D41CFB7D /* FileProviderSupport.swift in Sources */,
+				AC7AF2A4C1F3D63D405F3D88 /* LarkFSFileProviderEnumerator.swift in Sources */,
+				AA4D15864708F42DA6808F3B /* LarkFSFileProviderExtension.swift in Sources */,
+				99AADC8F2C6EC3E14FB46D22 /* LarkFSFileProviderItem.swift in Sources */,
+				6A5D7A868095B668FD4A0927 /* LarkFSNativeBridge.swift in Sources */,
+				4866A4682C1ED4A37F51D25A /* NativeBridgeModels.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5D7AAD68BD8A6092D98AB9F0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F555D8C6071825F29FB6A0B /* AppDelegate.swift in Sources */,
+				FA23DA63FC39357FCD5088D8 /* LarkFSDesktopApp.swift in Sources */,
+				38FCF3FDAFDA5E3B3056C4A6 /* DashboardModels.swift in Sources */,
+				75D2C7E95E37AE3509252EC5 /* CLICommandRunner.swift in Sources */,
+				5FD1588892728A939DAEDAB0 /* LarkFSCLIService.swift in Sources */,
+				BF8C19232605CC8407103035 /* NativeFileProviderDomainService.swift in Sources */,
+				DB42402BBAD013E9811140B1 /* NativeMountCapability.swift in Sources */,
+				B2AB7FB9D2B9A76591061F98 /* DashboardStore.swift in Sources */,
+				57B9F8141E71C4725AA832D5 /* AppIconAppearanceService.swift in Sources */,
+				4C9FC80B2F9013F656D95582 /* BundlePaths.swift in Sources */,
+				EDCEA8E7114FED4D84D199BE /* ContentView.swift in Sources */,
+				A5FEE6A0D753E2B6BF9548FC /* DashboardComponents.swift in Sources */,
+				2788F189F6D12B6A6236424E /* MountsView.swift in Sources */,
+				62D6DAA2CF2358D488129480 /* NativeMountView.swift in Sources */,
+				A1ED34725AC7B18AD3EF18A5 /* OverviewView.swift in Sources */,
+				DC6B7D7AA8AB1ACB4C3C72D5 /* SidebarView.swift in Sources */,
+				814EBA1D374BCCB72523DD8B /* LarkFSNativeBridge.swift in Sources */,
+				63942C3903284DFE1167388B /* NativeBridgeModels.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B15911A6E333E1AD14FE55BB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = LarkFSFileProviderExtension;
+			target = 6058E65875EC520507FA45EA /* LarkFSFileProviderExtension */;
+			targetProxy = 4F181D5FE91D20F274E696A2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		054CE024A6B1245FC1EDE5ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = App/LarkFSDesktop.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ichen.larkfs.desktop;
+				PRODUCT_NAME = LarkFSDesktop;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		67972314F88C082131C6AE98 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = App/LarkFSDesktop.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ichen.larkfs.desktop;
+				PRODUCT_NAME = LarkFSDesktop;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		81A9124867B3DDAF87867601 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = FileProviderSupport/LarkFSFileProvider.entitlements;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FileProviderSupport/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ichen.larkfs.desktop.fileprovider;
+				PRODUCT_NAME = LarkFSFileProvider;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		8BBC24921AD16764001468B2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = FileProviderSupport/LarkFSFileProvider.entitlements;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FileProviderSupport/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.ichen.larkfs.desktop.fileprovider;
+				PRODUCT_NAME = LarkFSFileProvider;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		D33EAF990F88091E8C31331D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F44A15A4C7169911F1CAEAB1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B109E3FC8AFC534F9FB3DB8E /* Build configuration list for PBXProject "LarkFSDesktop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D33EAF990F88091E8C31331D /* Debug */,
+				F44A15A4C7169911F1CAEAB1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C5529C9FCB2EBA8A7849BFC7 /* Build configuration list for PBXNativeTarget "LarkFSFileProviderExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BBC24921AD16764001468B2 /* Release */,
+				81A9124867B3DDAF87867601 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CB48F641A76255FD8B9FA041 /* Build configuration list for PBXNativeTarget "LarkFSDesktop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67972314F88C082131C6AE98 /* Release */,
+				054CE024A6B1245FC1EDE5ED /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FED2608EACFC1154E9DFB210 /* Project object */;
+}

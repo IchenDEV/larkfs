@@ -21,6 +21,14 @@ type mountState struct {
 	authRecovery *lkerr.AuthRecovery
 }
 
+func NewOperations(cfg config.MountConfig) (*vfs.Operations, error) {
+	state, err := buildMount(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return state.ops, nil
+}
+
 func buildMount(cfg config.MountConfig) (*mountState, error) {
 	exec, err := clipkg.NewExecutor(cfg.LarkCLIPath)
 	if err != nil {
@@ -42,7 +50,12 @@ func buildMount(cfg config.MountConfig) (*mountState, error) {
 	ttl := time.Duration(cfg.MetadataTTL) * time.Second
 	meta := cache.NewMetadataCache(ttl)
 
-	contentCache, err := cache.NewContentCache(cfg.CacheDir, 500*1024*1024)
+	contentCacheSize, err := cfg.ContentCacheSizeBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	contentCache, err := cache.NewContentCache(cfg.CacheDir, contentCacheSize)
 	if err != nil {
 		return nil, err
 	}

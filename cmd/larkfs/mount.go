@@ -34,7 +34,7 @@ func newMountCmd() *cobra.Command {
 	f := cmd.Flags()
 	f.BoolVarP(&cfg.Daemon, "daemon", "d", false, "Run as background daemon")
 	f.StringVar(&cfg.CacheDir, "cache-dir", "", "Cache directory (default: ~/.larkfs/cache)")
-	f.StringVar(&cfg.CacheSize, "cache-size", "500MB", "Cache size limit")
+	f.StringVar(&cfg.CacheSize, "cache-size", config.DefaultCacheSize, "Cache size limit")
 	f.IntVar(&cfg.MetadataTTL, "metadata-ttl", 60, "Metadata cache TTL in seconds")
 	f.StringVar(&cfg.LogFile, "log-file", "", "Log file path (default: ~/.larkfs/larkfs.log)")
 	f.StringVar(&cfg.LogLevel, "log-level", "info", "Log level (debug/info/warn/error)")
