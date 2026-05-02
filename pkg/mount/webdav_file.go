@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/IchenDEV/larkfs/pkg/cache"
 	"github.com/IchenDEV/larkfs/pkg/vfs"
 	"golang.org/x/net/webdav"
 )
@@ -18,6 +19,7 @@ type webdavFile struct {
 	ops       *vfs.Operations
 	node      *vfs.VNode
 	ctx       context.Context
+	content   *cache.ContentCache
 	data      []byte
 	offset    int64
 	dirOffset int
@@ -32,6 +34,7 @@ func (f *webdavFile) Close() error {
 	if err := f.ops.Write(f.ctx, f.node.Path(), f.data); err != nil {
 		return err
 	}
+	f.storeCachedData()
 	f.node.Size = int64(len(f.data))
 	f.node.ModTime = time.Now()
 	f.dirty = false
@@ -130,15 +133,32 @@ func (f *webdavFile) ensureData() error {
 	if f.data != nil {
 		return nil
 	}
+	if f.content != nil {
+		if data, ok := f.content.Get(f.node.Path()); ok {
+			f.data = data
+			f.node.Size = int64(len(f.data))
+			return nil
+		}
+	}
 	var err error
 	f.data, err = f.ops.Read(f.ctx, f.node.Path())
 	if f.data == nil && err == nil {
 		f.data = []byte{}
 	}
 	if err == nil {
+		f.storeCachedData()
 		f.node.Size = int64(len(f.data))
 	}
 	return err
+}
+
+func (f *webdavFile) storeCachedData() {
+	if f.content == nil || f.node.IsDir() {
+		return
+	}
+	if err := f.content.Set(f.node.Path(), f.data); err != nil {
+		slog.Warn("content cache set failed", "path", f.node.Path(), "error", err)
+	}
 }
 
 func (f *webdavFile) DeadProps() (map[xml.Name]webdav.Property, error) {

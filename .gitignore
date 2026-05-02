@@ -1,5 +1,7 @@
 bin/
 dist/
+apps/LarkFSDesktop/.build/
+apps/LarkFSDesktop/dist/
 *.exe
 *.test
 *.out

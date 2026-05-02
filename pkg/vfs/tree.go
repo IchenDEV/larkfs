@@ -40,19 +40,20 @@ const (
 )
 
 type VNode struct {
-	Name        string
-	Token       string
-	DocType     doctype.DocType
-	NodeType    NodeType
-	Kind        NodeKind
-	Control     ControlKind
-	Domain      string
-	Size        int64
-	ModTime     time.Time
-	CreatedTime time.Time
-	Page        doctype.PageInfo
-	TargetPath  string
-	Action      string
+	Name          string
+	Token         string
+	DocType       doctype.DocType
+	PendingCreate bool
+	NodeType      NodeType
+	Kind          NodeKind
+	Control       ControlKind
+	Domain        string
+	Size          int64
+	ModTime       time.Time
+	CreatedTime   time.Time
+	Page          doctype.PageInfo
+	TargetPath    string
+	Action        string
 
 	mu          sync.RWMutex
 	children    map[string]*VNode

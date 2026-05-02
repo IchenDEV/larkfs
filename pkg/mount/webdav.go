@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IchenDEV/larkfs/pkg/cache"
 	"github.com/IchenDEV/larkfs/pkg/config"
 	"github.com/IchenDEV/larkfs/pkg/vfs"
 	"golang.org/x/net/webdav"
@@ -21,6 +22,8 @@ type WebDAVServer struct {
 
 func NewWebDAVServer(cfg config.ServeConfig) (*WebDAVServer, error) {
 	mountCfg := config.MountConfig{
+		CacheDir:    cfg.CacheDir,
+		CacheSize:   cfg.CacheSize,
 		LogLevel:    cfg.LogLevel,
 		ReadOnly:    cfg.ReadOnly,
 		Domains:     cfg.Domains,
@@ -36,7 +39,7 @@ func NewWebDAVServer(cfg config.ServeConfig) (*WebDAVServer, error) {
 		return nil, err
 	}
 
-	fs := &webdavFS{ops: state.ops}
+	fs := &webdavFS{ops: state.ops, content: state.content}
 	handler := &webdav.Handler{
 		FileSystem: fs,
 		LockSystem: webdav.NewMemLS(),
@@ -119,7 +122,8 @@ func contentTypeFromName(name string) string {
 }
 
 type webdavFS struct {
-	ops *vfs.Operations
+	ops     *vfs.Operations
+	content *cache.ContentCache
 }
 
 func (f *webdavFS) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
@@ -142,9 +146,9 @@ func (f *webdavFS) OpenFile(ctx context.Context, name string, flag int, perm os.
 		if err != nil {
 			return nil, err
 		}
-		return &webdavFile{ops: f.ops, node: newNode, ctx: ctx, flags: flag, dirty: true}, nil
+		return &webdavFile{ops: f.ops, node: newNode, ctx: ctx, flags: flag, dirty: true, content: f.content}, nil
 	}
-	file := &webdavFile{ops: f.ops, node: node, ctx: ctx, flags: flag}
+	file := &webdavFile{ops: f.ops, node: node, ctx: ctx, flags: flag, content: f.content}
 	if flag&os.O_TRUNC != 0 && !node.IsDir() {
 		file.data = []byte{}
 		file.dirty = true

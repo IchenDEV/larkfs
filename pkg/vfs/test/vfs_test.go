@@ -3,6 +3,7 @@ package vfs_test
 import (
 	"context"
 	stderrors "errors"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -36,6 +37,7 @@ func newFullTestOps(t *testing.T, runner *testutil.Runner) *vfs.Operations {
 }
 
 func TestVFSDriveCRUDControlAndRenameBlackbox(t *testing.T) {
+	uploadCount := 0
 	runner := &testutil.Runner{RunFn: func(_ context.Context, args ...string) ([]byte, error) {
 		joined := strings.Join(args, " ")
 		switch {
@@ -47,8 +49,13 @@ func TestVFSDriveCRUDControlAndRenameBlackbox(t *testing.T) {
 			return []byte(`{"ok":true}`), nil
 		case strings.HasPrefix(joined, "docs +create"):
 			return []byte(`{"data":{"doc_id":"doc_new"}}`), nil
+		case strings.HasPrefix(joined, "drive +upload"):
+			uploadCount++
+			return []byte(`{"data":{"file_token":"file_uploaded_` + strconv.Itoa(uploadCount) + `"}}`), nil
 		case strings.HasPrefix(joined, "drive files create_folder"):
 			return []byte(`{"data":{"token":"folder_new"}}`), nil
+		case strings.HasPrefix(joined, "drive files patch"):
+			return []byte(`{"code":0}`), nil
 		case strings.HasPrefix(joined, "drive files delete"):
 			return []byte(`{"code":0}`), nil
 		case strings.HasPrefix(joined, "drive +move"):
@@ -81,11 +88,59 @@ func TestVFSDriveCRUDControlAndRenameBlackbox(t *testing.T) {
 	if err != nil || dir.Token != "folder_new" {
 		t.Fatalf("Mkdir() = %+v, %v", dir, err)
 	}
-	if err := ops.Rename(context.Background(), "/drive/Doc.md", "/drive/Folder/Doc.md"); err != nil {
+	uploaded, err := ops.Create(context.Background(), "/drive/blob.bin")
+	if err != nil {
+		t.Fatalf("Create(file) error: %v", err)
+	}
+	if uploaded.Token != "" || !uploaded.PendingCreate || uploaded.DocType != doctype.TypeFile {
+		t.Fatalf("Create(file) = %+v", uploaded)
+	}
+	replaceTemplate, err := ops.Read(context.Background(), "/drive/blob.bin._replace.request.json")
+	if err != nil || !strings.Contains(string(replaceTemplate), `"target_path": "/drive/blob.bin"`) {
+		t.Fatalf("Read(replace template) = %s, %v", replaceTemplate, err)
+	}
+	if err := ops.Write(context.Background(), "/drive/blob.bin", []byte("payload")); err != nil {
+		t.Fatalf("Write(file) error: %v", err)
+	}
+	if uploaded.Token != "file_uploaded_1" || uploaded.PendingCreate {
+		t.Fatalf("uploaded file state = %+v", uploaded)
+	}
+	if err := ops.Write(context.Background(), "/drive/blob.bin", []byte("payload-2")); !stderrors.Is(err, vfs.ErrUnsupported) {
+		t.Fatalf("Write(existing file) error = %v, want ErrUnsupported", err)
+	}
+	result, err := ops.ExecuteOp(context.Background(), "/drive/blob.bin._replace.request.json", []byte(`{"data":{"content":"payload-3"}}`))
+	if err != nil {
+		t.Fatalf("ExecuteOp(replace) error: %v", err)
+	}
+	if !strings.Contains(string(result), `"old_token": "file_uploaded_1"`) || !strings.Contains(string(result), `"new_token": "file_uploaded_2"`) {
+		t.Fatalf("replace result = %s", result)
+	}
+	if uploaded.Token != "file_uploaded_2" {
+		t.Fatalf("replace should update in-memory token, got %+v", uploaded)
+	}
+	if siblingResult, err := ops.Read(context.Background(), "/drive/blob.bin._replace.result.json"); err != nil || !strings.Contains(string(siblingResult), `"new_token": "file_uploaded_2"`) {
+		t.Fatalf("Read(replace result) = %s, %v", siblingResult, err)
+	}
+	if err := ops.Rename(context.Background(), "/drive/blob.bin", "/drive/blob-v2.bin"); err != nil {
+		t.Fatalf("Rename(file basename) error: %v", err)
+	}
+	if ops.Tree().Resolve("/drive/blob.bin._replace.request.json") != nil {
+		t.Fatal("old replace helper path should be removed after rename")
+	}
+	if ops.Tree().Resolve("/drive/blob-v2.bin._replace.request.json") == nil {
+		t.Fatal("renamed file should get a new replace helper path")
+	}
+	if err := ops.Rename(context.Background(), "/drive/Doc.md", "/drive/Renamed.md"); err != nil {
+		t.Fatalf("Rename(basename) error: %v", err)
+	}
+	if ops.Tree().Resolve("/drive/Renamed.md") == nil {
+		t.Fatal("renamed doc should be addressable at new path")
+	}
+	if err := ops.Rename(context.Background(), "/drive/Renamed.md", "/drive/Folder/Renamed.md"); err != nil {
 		t.Fatalf("Rename(move) error: %v", err)
 	}
-	if err := ops.Rename(context.Background(), "/drive/Folder/Doc.md", "/drive/Folder/Renamed.md"); !stderrors.Is(err, vfs.ErrUnsupported) {
-		t.Fatalf("Rename(basename) error = %v, want ErrUnsupported", err)
+	if got := testutil.JoinArgs(runner.Calls[len(runner.Calls)-1]); !strings.Contains(got, "drive +move") {
+		t.Fatalf("move args = %q", got)
 	}
 	if err := ops.Remove(context.Background(), "/drive/New.md"); err != nil {
 		t.Fatalf("Remove() error: %v", err)

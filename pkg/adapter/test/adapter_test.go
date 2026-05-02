@@ -29,6 +29,10 @@ func TestDriveAdapterRoutesAndCaches(t *testing.T) {
 			return []byte(`{"ok":true}`), nil
 		case strings.HasPrefix(joined, "docs +create"):
 			return []byte(`{"data":{"doc_id":"doc_new"}}`), nil
+		case strings.HasPrefix(joined, "drive +upload"):
+			return []byte(`{"data":{"file_token":"file_new"}}`), nil
+		case strings.HasPrefix(joined, "drive files patch"):
+			return []byte(`{"code":0}`), nil
 		case strings.HasPrefix(joined, "drive files delete"):
 			return []byte(`{"code":0}`), nil
 		default:
@@ -76,8 +80,18 @@ func TestDriveAdapterRoutesAndCaches(t *testing.T) {
 	if err != nil || token != "doc_new" {
 		t.Fatalf("Create() = %q, %v", token, err)
 	}
+	if err := a.Rename(context.Background(), "doc_1", "Renamed"); err != nil {
+		t.Fatalf("Rename() error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); !strings.Contains(got, `drive files patch`) || !strings.Contains(got, `{"new_title":"Renamed"}`) {
+		t.Fatalf("Rename() args = %q", got)
+	}
 	if err := a.Delete(context.Background(), "doc_1", doctype.TypeDocx); err != nil {
 		t.Fatalf("Delete() error: %v", err)
+	}
+	replacedToken, err := a.ReplaceFile(context.Background(), "folder", "file_old", "blob.bin", []byte("payload"))
+	if err != nil || replacedToken != "file_new" {
+		t.Fatalf("ReplaceFile() = %q, %v", replacedToken, err)
 	}
 }
 

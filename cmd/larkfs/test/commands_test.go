@@ -17,6 +17,14 @@ func TestVersionCommandBlackbox(t *testing.T) {
 	if !strings.Contains(out, "larkfs dev") || !strings.Contains(out, "commit: unknown") {
 		t.Fatalf("version output = %q", out)
 	}
+
+	out, err = runLarkFS(t, nil, "version", "--json")
+	if err != nil {
+		t.Fatalf("larkfs version --json error: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, `"version": "dev"`) || !strings.Contains(out, `"commit": "unknown"`) {
+		t.Fatalf("version --json output = %q", out)
+	}
 }
 
 func TestStatusCommandNoMountsBlackbox(t *testing.T) {
@@ -32,7 +40,7 @@ func TestStatusCommandNoMountsBlackbox(t *testing.T) {
 	if err != nil {
 		t.Fatalf("larkfs status --json error: %v\n%s", err, out)
 	}
-	if !strings.Contains(out, "No active mounts.") {
+	if strings.TrimSpace(out) != "[]" {
 		t.Fatalf("status --json output = %q", out)
 	}
 }
@@ -92,6 +100,14 @@ func TestDoctorMissingCLIBlackbox(t *testing.T) {
 	if !strings.Contains(out, "lark-cli: not found") {
 		t.Fatalf("doctor output = %q", out)
 	}
+
+	out, err = runLarkFS(t, map[string]string{"PATH": t.TempDir()}, "doctor", "--json")
+	if err != nil {
+		t.Fatalf("larkfs doctor --json error: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, `"ok": false`) || !strings.Contains(out, `"found": false`) {
+		t.Fatalf("doctor --json output = %q", out)
+	}
 }
 
 func TestDoctorWithFakeCLIBlackbox(t *testing.T) {
@@ -106,6 +122,11 @@ esac
 	out, _ := runLarkFS(t, map[string]string{"PATH": dir}, "doctor")
 	if !strings.Contains(out, "lark-cli auth: logged in as Alice") {
 		t.Fatalf("doctor output = %q", out)
+	}
+
+	out, _ = runLarkFS(t, map[string]string{"PATH": dir}, "doctor", "--json")
+	if !strings.Contains(out, `"user_name": "Alice"`) || !strings.Contains(out, `"name": "network"`) {
+		t.Fatalf("doctor --json output = %q", out)
 	}
 }
 
@@ -126,6 +147,30 @@ func TestMountAndServeFastFailuresBlackbox(t *testing.T) {
 	out, err = runLarkFS(t, map[string]string{"HOME": home}, "serve", "--addr", "localhost", "--port", "-1", "--domains", "contact", "--lark-cli", cliPath)
 	if err == nil {
 		t.Fatalf("larkfs serve unexpectedly succeeded:\n%s", out)
+	}
+}
+
+func TestNativeListRootBlackbox(t *testing.T) {
+	home := t.TempDir()
+	cliPath := filepath.Join(home, "lark-cli")
+	if err := os.WriteFile(cliPath, []byte("#!/bin/sh\nprintf '{}'\n"), 0o755); err != nil {
+		t.Fatalf("write fake lark-cli: %v", err)
+	}
+
+	out, err := runLarkFS(t, map[string]string{"HOME": home}, "native", "list", "/", "--domains", "drive,wiki", "--lark-cli", cliPath)
+	if err != nil {
+		t.Fatalf("larkfs native list error: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, `"path": "/drive"`) || !strings.Contains(out, `"path": "/wiki"`) {
+		t.Fatalf("native list output = %q", out)
+	}
+
+	out, err = runLarkFS(t, map[string]string{"HOME": home}, "native", "item", "/", "--domains", "drive", "--lark-cli", cliPath)
+	if err != nil {
+		t.Fatalf("larkfs native item error: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, `"id": "root"`) || !strings.Contains(out, `"name": "LarkFS"`) {
+		t.Fatalf("native item output = %q", out)
 	}
 }
 

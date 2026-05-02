@@ -1,69 +1,20 @@
 package vfs
 
-import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"path"
-	"sort"
-	"strings"
-	"time"
-
-	clipkg "github.com/IchenDEV/larkfs/pkg/cli"
-)
+import clipkg "github.com/IchenDEV/larkfs/pkg/cli"
 
 type execRequest struct {
-	Args   []string       `json:"args,omitempty"`
-	Flags  map[string]any `json:"flags,omitempty"`
-	Params map[string]any `json:"params,omitempty"`
-	Data   map[string]any `json:"data,omitempty"`
-	Query  string         `json:"query,omitempty"`
+	Args       []string       `json:"args,omitempty"`
+	Flags      map[string]any `json:"flags,omitempty"`
+	Params     map[string]any `json:"params,omitempty"`
+	Data       map[string]any `json:"data,omitempty"`
+	Query      string         `json:"query,omitempty"`
+	TargetPath string         `json:"target_path,omitempty"`
 }
 
 type actionSpec struct {
 	args     []string
 	queryArg string
 	pageAll  bool
-}
-
-func (o *Operations) ensureControlChildren(node *VNode) {
-	if node == nil || !node.IsDir() || node.Kind != NodeKindResource {
-		return
-	}
-	if node.GetChild("_meta") == nil || node.GetChild("_ops") == nil || node.GetChild("_queries") == nil || node.GetChild("_views") == nil {
-		addControlNodes(node, node.Path())
-	}
-}
-
-func (o *Operations) listControlDir(node *VNode) ([]*VNode, error) {
-	node.ClearChildren()
-	switch node.Control {
-	case ControlMetaDir:
-		node.AddChild(newControlFile(node, "index.json", ControlIndexFile, "index"))
-		node.AddChild(newControlFile(node, "capabilities.json", ControlCapsFile, "capabilities"))
-	case ControlOpsDir:
-		node.AddChild(newControlFile(node, "exec.request.json", ControlRequestFile, "exec"))
-		node.AddChild(newControlFile(node, "exec.result.json", ControlResultFile, "exec"))
-		for _, action := range opActions(node.Domain) {
-			node.AddChild(newControlFile(node, action+".request.json", ControlRequestFile, action))
-			node.AddChild(newControlFile(node, action+".result.json", ControlResultFile, action))
-		}
-	case ControlQueriesDir:
-		for _, action := range queryActions(node.Domain) {
-			node.AddChild(newControlFile(node, action+".request.json", ControlRequestFile, action))
-			node.AddChild(newControlFile(node, action+".result.json", ControlResultFile, action))
-		}
-	case ControlViewsDir:
-		for _, action := range queryActions(node.Domain) {
-			viewDir := newControlDir(node, action, ControlViewDir, action)
-			viewDir.AddChild(newControlFile(viewDir, "results.json", ControlViewFile, action))
-			node.AddChild(viewDir)
-		}
-	case ControlViewDir:
-		node.AddChild(newControlFile(node, "results.json", ControlViewFile, node.Action))
-	}
-	node.SetPopulated()
-	return node.Children(), nil
 }
 
 func queryActions(domain string) []string {
@@ -104,7 +55,7 @@ func queryActions(domain string) []string {
 func opActions(domain string) []string {
 	switch domain {
 	case "drive":
-		return []string{"upload", "download", "import", "export", "move", "delete", "add-comment", "task-result"}
+		return []string{"upload", "download", "import", "export", "move", "delete", "replace", "add-comment", "task-result"}
 	case "wiki":
 		return []string{"node-create"}
 	case "im":
@@ -134,237 +85,6 @@ func opActions(domain string) []string {
 	default:
 		return nil
 	}
-}
-
-func (o *Operations) readControlNode(node *VNode) ([]byte, error) {
-	switch node.Control {
-	case ControlIndexFile:
-		target := o.tree.Resolve(node.TargetPath)
-		if target == nil {
-			target = &VNode{Kind: NodeKindResource}
-		}
-		payload := map[string]any{
-			"path":        node.TargetPath,
-			"domain":      node.Domain,
-			"kind":        target.Kind,
-			"node_type":   target.NodeType,
-			"has_more":    target.Page.HasMore,
-			"next_cursor": target.Page.NextCursor,
-			"window_size": target.Page.WindowSize,
-			"sort_key":    target.Page.SortKey,
-			"truncated":   target.Page.Truncated,
-		}
-		return json.MarshalIndent(payload, "", "  ")
-	case ControlCapsFile:
-		payload := map[string]any{
-			"domain":  node.Domain,
-			"queries": queryActions(node.Domain),
-			"ops":     append([]string{"exec"}, opActions(node.Domain)...),
-		}
-		return json.MarshalIndent(payload, "", "  ")
-	case ControlRequestFile, ControlResultFile, ControlViewFile:
-		if data := o.controls.Get(node.Path()); data != nil {
-			return data, nil
-		}
-		if node.Control == ControlRequestFile {
-			return o.requestTemplate(node)
-		}
-		if node.Control == ControlViewFile {
-			return []byte("{}\n"), nil
-		}
-		return []byte{}, nil
-	}
-	return nil, fmt.Errorf("unsupported control read: %s", node.Path())
-}
-
-func (o *Operations) requestTemplate(node *VNode) ([]byte, error) {
-	payload := map[string]any{
-		"domain":      node.Domain,
-		"action":      node.Action,
-		"target_path": node.TargetPath,
-		"query":       "",
-		"flags":       map[string]any{},
-		"params":      map[string]any{},
-		"data":        map[string]any{},
-		"args":        []string{},
-	}
-	if node.Action == "exec" {
-		payload["help"] = "Set args to exact lark-cli arguments, for example [\"schema\", \"drive.files.list\"]. Non-_system domains auto-prefix the domain when args do not start with it."
-	} else if isQueryNode(node) {
-		if spec, ok := querySpec(node.Domain, node.Action); ok {
-			payload["base_args"] = spec.args
-			payload["help"] = "Set query for shortcut searches, or flags/params/data for command-specific arguments."
-		}
-	} else if spec, ok := actionSpecFor(node.Domain, node.Action); ok {
-		payload["base_args"] = spec.args
-		payload["help"] = "Set flags for CLI flags, params for --params JSON, data for --data JSON, or args to override the base command completely."
-	}
-	return json.MarshalIndent(payload, "", "  ")
-}
-
-func (o *Operations) writeControlNode(ctx context.Context, node *VNode, data []byte) error {
-	o.controls.Set(node.Path(), data)
-	node.ModTime = time.Now()
-
-	switch {
-	case strings.HasSuffix(node.Name, "exec.request.json"):
-		out, err := o.executeControlExec(ctx, node, data)
-		if err != nil {
-			return err
-		}
-		o.storeSiblingResult(node, out)
-		return nil
-	case strings.HasSuffix(node.Name, ".request.json"):
-		var out []byte
-		var err error
-		if isQueryNode(node) {
-			out, err = o.executeQuery(ctx, node, data)
-		} else {
-			out, err = o.executeAction(ctx, node, data)
-		}
-		if err != nil {
-			return err
-		}
-		o.storeSiblingResult(node, out)
-		if isQueryNode(node) {
-			o.storeViewResult(node, out)
-		}
-		return nil
-	default:
-		return fmt.Errorf("control node is not writable: %s", node.Path())
-	}
-}
-
-func isQueryNode(node *VNode) bool {
-	parent := node.Parent()
-	return parent != nil && parent.Control == ControlQueriesDir
-}
-
-func (o *Operations) storeSiblingResult(node *VNode, data []byte) {
-	resultPath := strings.Replace(node.Path(), ".request.json", ".result.json", 1)
-	o.controls.Set(resultPath, data)
-}
-
-func (o *Operations) storeViewResult(node *VNode, data []byte) {
-	viewPath := path.Join("/", node.Domain, "_views", node.Action, "results.json")
-	o.controls.Set(viewPath, data)
-}
-
-func (o *Operations) executeControlExec(ctx context.Context, node *VNode, data []byte) ([]byte, error) {
-	var req execRequest
-	if err := json.Unmarshal(data, &req); err != nil {
-		return nil, fmt.Errorf("parse exec request: %w", err)
-	}
-	if len(req.Args) == 0 {
-		return nil, fmt.Errorf("exec request requires args")
-	}
-	args := req.Args
-	if node.Domain != "_system" && !hasDomainPrefix(node.Domain, args) {
-		args = append([]string{node.Domain}, args...)
-	}
-	return o.cli.Run(ctx, args...)
-}
-
-func hasDomainPrefix(domain string, args []string) bool {
-	if len(args) == 0 {
-		return false
-	}
-	return args[0] == domain
-}
-
-func (o *Operations) executeQuery(ctx context.Context, node *VNode, data []byte) ([]byte, error) {
-	var req execRequest
-	if len(data) > 0 {
-		if err := json.Unmarshal(data, &req); err != nil {
-			return nil, fmt.Errorf("parse query request: %w", err)
-		}
-	}
-	if len(req.Args) > 0 {
-		return o.executeControlExec(ctx, node, data)
-	}
-
-	spec, ok := querySpec(node.Domain, node.Action)
-	if !ok {
-		return nil, fmt.Errorf("unsupported query: %s/%s", node.Domain, node.Action)
-	}
-	args := append([]string(nil), spec.args...)
-	if spec.queryArg != "" && req.Query != "" {
-		args = append(args, spec.queryArg, req.Query)
-		req.Query = ""
-	}
-	if spec.pageAll {
-		args = append(args, "--format", "json", "--page-all", "--page-limit", "0")
-	}
-	args = appendRequestArgs(args, req)
-
-	out, err := o.cli.Run(ctx, args...)
-	if err != nil {
-		return nil, err
-	}
-	var pretty any
-	if err := json.Unmarshal(out, &pretty); err == nil {
-		return json.MarshalIndent(pretty, "", "  ")
-	}
-	return out, nil
-}
-
-func (o *Operations) executeAction(ctx context.Context, node *VNode, data []byte) ([]byte, error) {
-	var req execRequest
-	if len(data) > 0 {
-		if err := json.Unmarshal(data, &req); err != nil {
-			return nil, fmt.Errorf("parse action request: %w", err)
-		}
-	}
-	if len(req.Args) > 0 {
-		return o.executeControlExec(ctx, node, data)
-	}
-	spec, ok := actionSpecFor(node.Domain, node.Action)
-	if !ok {
-		return nil, fmt.Errorf("unsupported action: %s/%s", node.Domain, node.Action)
-	}
-	args := append([]string(nil), spec.args...)
-	args = appendRequestArgs(args, req)
-	out, err := o.cli.Run(ctx, args...)
-	if err != nil {
-		return nil, err
-	}
-	var pretty any
-	if err := json.Unmarshal(out, &pretty); err == nil {
-		return json.MarshalIndent(pretty, "", "  ")
-	}
-	return out, nil
-}
-
-func appendRequestArgs(args []string, req execRequest) []string {
-	if req.Query != "" {
-		args = append(args, "--query", req.Query)
-	}
-	if len(req.Params) > 0 {
-		raw, _ := json.Marshal(req.Params)
-		args = append(args, "--params", string(raw))
-	}
-	if len(req.Data) > 0 {
-		raw, _ := json.Marshal(req.Data)
-		args = append(args, "--data", string(raw))
-	}
-	keys := make([]string, 0, len(req.Flags))
-	for k := range req.Flags {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		v := req.Flags[k]
-		flag := "--" + strings.ReplaceAll(k, "_", "-")
-		switch typed := v.(type) {
-		case bool:
-			if typed {
-				args = append(args, flag)
-			}
-		default:
-			args = append(args, flag, fmt.Sprint(typed))
-		}
-	}
-	return args
 }
 
 func querySpec(domain, action string) (actionSpec, bool) {
@@ -565,38 +285,6 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 			"get-user":    {args: []string{"contact", "+get-user"}},
 		},
 	}
-}
-
-func (o *Operations) resolveNode(ctx context.Context, nodePath string) (*VNode, error) {
-	node := o.tree.Resolve(nodePath)
-	if node != nil {
-		return node, nil
-	}
-
-	clean := path.Clean("/" + strings.TrimPrefix(nodePath, "/"))
-	parts := strings.Split(strings.TrimPrefix(clean, "/"), "/")
-	cur := ""
-	for _, part := range parts[:len(parts)-1] {
-		cur = cur + "/" + part
-		if _, err := o.ReadDir(ctx, cur); err != nil {
-			break
-		}
-	}
-	if _, err := o.ReadDir(ctx, pathpkgDir(nodePath)); err == nil {
-		node = o.tree.Resolve(nodePath)
-	}
-	if node == nil {
-		return nil, fmt.Errorf("not found: %s", nodePath)
-	}
-	return node, nil
-}
-
-func pathpkgDir(p string) string {
-	p = path.Clean("/" + strings.TrimPrefix(p, "/"))
-	if p == "/" {
-		return "/"
-	}
-	return path.Dir(p)
 }
 
 var _ clipkg.Runner = (*clipkg.Executor)(nil)
