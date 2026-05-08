@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/IchenDEV/larkfs/pkg/cli"
@@ -50,7 +51,15 @@ func isRetryable(err error) bool {
 	}
 	var cliErr *cli.CLIError
 	if errors.As(err, &cliErr) {
-		return cliErr.ExitCode >= 500
+		if cliErr.ExitCode == -1 {
+			return true
+		}
+		stderr := strings.ToLower(cliErr.Stderr)
+		return strings.Contains(stderr, "500") ||
+			strings.Contains(stderr, "502") ||
+			strings.Contains(stderr, "503") ||
+			strings.Contains(stderr, "internal server error") ||
+			strings.Contains(stderr, "service unavailable")
 	}
 	return false
 }

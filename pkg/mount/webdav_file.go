@@ -35,8 +35,8 @@ func (f *webdavFile) Close() error {
 		return err
 	}
 	f.storeCachedData()
-	f.node.Size = int64(len(f.data))
-	f.node.ModTime = time.Now()
+	f.node.SetSize(int64(len(f.data)))
+	f.node.SetModTime(time.Now())
 	f.dirty = false
 	return nil
 }
@@ -125,7 +125,7 @@ func (f *webdavFile) Write(p []byte) (int, error) {
 	copy(f.data[f.offset:end], p)
 	f.offset = end
 	f.dirty = true
-	f.node.Size = int64(len(f.data))
+	f.node.SetSize(int64(len(f.data)))
 	return len(p), nil
 }
 
@@ -136,7 +136,7 @@ func (f *webdavFile) ensureData() error {
 	if f.content != nil {
 		if data, ok := f.content.Get(f.node.Path()); ok {
 			f.data = data
-			f.node.Size = int64(len(f.data))
+			f.node.SetSize(int64(len(f.data)))
 			return nil
 		}
 	}
@@ -147,7 +147,7 @@ func (f *webdavFile) ensureData() error {
 	}
 	if err == nil {
 		f.storeCachedData()
-		f.node.Size = int64(len(f.data))
+		f.node.SetSize(int64(len(f.data)))
 	}
 	return err
 }
@@ -185,8 +185,8 @@ type vnodeFileInfo struct {
 }
 
 func (i *vnodeFileInfo) Name() string       { return i.node.Name }
-func (i *vnodeFileInfo) Size() int64        { return i.node.Size }
-func (i *vnodeFileInfo) ModTime() time.Time { return i.node.ModTime }
+func (i *vnodeFileInfo) Size() int64        { return i.node.GetSize() }
+func (i *vnodeFileInfo) ModTime() time.Time { return i.node.GetModTime() }
 func (i *vnodeFileInfo) Sys() interface{}   { return nil }
 
 func (i *vnodeFileInfo) Mode() os.FileMode {

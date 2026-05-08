@@ -41,7 +41,7 @@ func buildMount(cfg config.MountConfig) (*mountState, error) {
 		result, err := lkerr.WithRetry(ctx, lkerr.DefaultRetry, fn)
 		if err != nil {
 			if recovered := authRecovery.HandleError(ctx, err); recovered == nil {
-				return fn()
+				return lkerr.WithRetry(ctx, lkerr.DefaultRetry, fn)
 			}
 		}
 		return result, err
@@ -84,6 +84,7 @@ func buildMount(cfg config.MountConfig) (*mountState, error) {
 		Meeting:  meetingAdapter,
 		ReadOnly: cfg.ReadOnly,
 		TTL:      ttl,
+		CacheDir: cfg.CacheDir,
 	})
 
 	return &mountState{

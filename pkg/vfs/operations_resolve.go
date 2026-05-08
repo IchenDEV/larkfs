@@ -26,7 +26,7 @@ func (o *Operations) resolveNode(ctx context.Context, nodePath string) (*VNode, 
 		node = o.tree.Resolve(nodePath)
 	}
 	if node == nil {
-		return nil, fmt.Errorf("not found: %s", nodePath)
+		return nil, fmt.Errorf("%w: %s", ErrNotFound, nodePath)
 	}
 	return node, nil
 }

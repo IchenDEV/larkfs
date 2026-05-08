@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/IchenDEV/larkfs/pkg/doctype"
 )
@@ -46,7 +45,7 @@ func (o *Operations) Create(ctx context.Context, path string) (*VNode, error) {
 
 	dt := createDocTypeForName(fileName)
 
-	child := &VNode{
+	child := newVNodeNow(&VNode{
 		Name:          parts[len(parts)-1],
 		PendingCreate: dt == doctype.TypeFile,
 		DocType:       dt,
@@ -54,9 +53,7 @@ func (o *Operations) Create(ctx context.Context, path string) (*VNode, error) {
 		Kind:          NodeKindResource,
 		Domain:        domain,
 		TargetPath:    path,
-		ModTime:       time.Now(),
-		children:      make(map[string]*VNode),
-	}
+	})
 	if !child.PendingCreate {
 		token, err := o.drive.Create(ctx, parent.Token, driveRemoteName(fileName, dt), dt, nil)
 		if err != nil {
@@ -97,7 +94,7 @@ func (o *Operations) Mkdir(ctx context.Context, path string) (*VNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	child := &VNode{
+	child := newVNodeNow(&VNode{
 		Name:       dirName,
 		Token:      token,
 		DocType:    doctype.TypeFolder,
@@ -105,9 +102,7 @@ func (o *Operations) Mkdir(ctx context.Context, path string) (*VNode, error) {
 		Kind:       NodeKindResource,
 		Domain:     domain,
 		TargetPath: path,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	}
+	})
 	parent.AddChild(child)
 	o.ensureControlChildren(child)
 	return child, nil

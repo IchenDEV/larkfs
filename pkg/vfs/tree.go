@@ -3,6 +3,7 @@ package vfs
 import (
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/IchenDEV/larkfs/pkg/doctype"
@@ -48,8 +49,7 @@ type VNode struct {
 	Kind          NodeKind
 	Control       ControlKind
 	Domain        string
-	Size          int64
-	ModTime       time.Time
+	size          atomic.Int64
 	CreatedTime   time.Time
 	Page          doctype.PageInfo
 	TargetPath    string
@@ -59,16 +59,18 @@ type VNode struct {
 	children    map[string]*VNode
 	parent      *VNode
 	populatedAt time.Time
+	modTime     time.Time
 }
 
 func NewRootNode() *VNode {
-	return &VNode{
+	n := &VNode{
 		Name:     "",
 		NodeType: NodeDir,
 		Kind:     NodeKindResource,
 		children: make(map[string]*VNode),
-		ModTime:  time.Now(),
 	}
+	n.SetModTime(time.Now())
+	return n
 }
 
 func (n *VNode) AddChild(child *VNode) {
@@ -119,6 +121,21 @@ func (n *VNode) IsDir() bool {
 	return n.NodeType == NodeDir
 }
 
+func (n *VNode) GetSize() int64  { return n.size.Load() }
+func (n *VNode) SetSize(s int64) { n.size.Store(s) }
+
+func (n *VNode) GetModTime() time.Time {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	return n.modTime
+}
+
+func (n *VNode) SetModTime(t time.Time) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.modTime = t
+}
+
 func (n *VNode) Parent() *VNode { return n.parent }
 
 func (n *VNode) Path() string {
@@ -139,29 +156,31 @@ type Tree struct {
 	root *VNode
 }
 
+func newVNodeNow(v *VNode) *VNode {
+	v.children = make(map[string]*VNode)
+	v.modTime = time.Now()
+	return v
+}
+
 func NewTree(domains []string) *Tree {
 	root := NewRootNode()
 	for _, domain := range domains {
-		domainNode := &VNode{
+		domainNode := newVNodeNow(&VNode{
 			Name:     domain,
 			NodeType: NodeDir,
 			Kind:     NodeKindResource,
 			Domain:   domain,
-			children: make(map[string]*VNode),
-			ModTime:  time.Now(),
-		}
+		})
 		addControlNodes(domainNode, "/"+domain)
 		if domain == "calendar" || domain == "tasks" {
-			domainNode.AddChild(&VNode{
+			domainNode.AddChild(newVNodeNow(&VNode{
 				Name:       "_create.md",
 				Token:      "_create",
 				NodeType:   NodeFile,
 				Kind:       NodeKindResource,
 				Domain:     domain,
 				TargetPath: "/" + domain,
-				ModTime:    time.Now(),
-				children:   make(map[string]*VNode),
-			})
+			}))
 		}
 		root.AddChild(domainNode)
 	}
@@ -170,46 +189,38 @@ func NewTree(domains []string) *Tree {
 }
 
 func addControlNodes(parent *VNode, targetPath string) {
-	parent.AddChild(&VNode{
+	parent.AddChild(newVNodeNow(&VNode{
 		Name:       "_meta",
 		NodeType:   NodeDir,
 		Kind:       NodeKindControlDir,
 		Control:    ControlMetaDir,
 		Domain:     parent.Domain,
 		TargetPath: targetPath,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	})
-	parent.AddChild(&VNode{
+	}))
+	parent.AddChild(newVNodeNow(&VNode{
 		Name:       "_ops",
 		NodeType:   NodeDir,
 		Kind:       NodeKindControlDir,
 		Control:    ControlOpsDir,
 		Domain:     parent.Domain,
 		TargetPath: targetPath,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	})
-	parent.AddChild(&VNode{
+	}))
+	parent.AddChild(newVNodeNow(&VNode{
 		Name:       "_queries",
 		NodeType:   NodeDir,
 		Kind:       NodeKindControlDir,
 		Control:    ControlQueriesDir,
 		Domain:     parent.Domain,
 		TargetPath: targetPath,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	})
-	parent.AddChild(&VNode{
+	}))
+	parent.AddChild(newVNodeNow(&VNode{
 		Name:       "_views",
 		NodeType:   NodeDir,
 		Kind:       NodeKindControlDir,
 		Control:    ControlViewsDir,
 		Domain:     parent.Domain,
 		TargetPath: targetPath,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	})
+	}))
 }
 
 func (t *Tree) Root() *VNode {

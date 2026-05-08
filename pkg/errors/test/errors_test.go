@@ -47,7 +47,7 @@ func TestRetryAndAuthRecoveryBlackbox(t *testing.T) {
 		InitialBackoff: time.Hour,
 		MaxBackoff:     time.Hour,
 	}, func() ([]byte, error) {
-		return nil, &cli.CLIError{ExitCode: 500}
+		return nil, &cli.CLIError{ExitCode: 1, Stderr: "500 internal server error"}
 	})
 	if !stderrors.Is(err, context.Canceled) {
 		t.Fatalf("WithRetry(canceled) error = %v", err)

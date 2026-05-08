@@ -175,9 +175,9 @@ func nativeItemFromNode(itemPath string, node *vfs.VNode) nativeItem {
 		Kind:        kind,
 		DocType:     string(node.DocType),
 		ContentType: nativeContentType(node),
-		Size:        node.Size,
+		Size:        node.GetSize(),
 		CreatedAt:   nativeTime(node.CreatedTime),
-		ModifiedAt:  nativeTime(node.ModTime),
+		ModifiedAt:  nativeTime(node.GetModTime()),
 		Version:     nativeVersion(itemPath, node),
 	}
 }
@@ -219,8 +219,8 @@ func nativeContentType(node *vfs.VNode) string {
 }
 
 func nativeVersion(itemPath string, node *vfs.VNode) string {
-	if !node.ModTime.IsZero() {
-		return fmt.Sprintf("%d", node.ModTime.UnixNano())
+	if mt := node.GetModTime(); !mt.IsZero() {
+		return fmt.Sprintf("%d", mt.UnixNano())
 	}
 	return nativePathID(itemPath)
 }
