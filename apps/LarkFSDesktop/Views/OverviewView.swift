@@ -8,54 +8,12 @@ struct OverviewView: View {
     let openConfigDirectory: () -> Void
     let openNativeMountPlan: () -> Void
 
-    private var setupRecommendations: [SetupRecommendation] {
-        var items: [SetupRecommendation] = []
-
-        if !snapshot.doctor.larkCLI.found {
-            items.append(
-                SetupRecommendation(
-                    title: "Install Lark CLI",
-                    detail: "The desktop app reads health and mount status through the `larkfs` CLI. Install the upstream Lark CLI first so auth and diagnostics can work.",
-                    command: "npm install -g @larksuite/cli",
-                    icon: "terminal"
-                )
-            )
-        }
-
-        if !snapshot.doctor.auth.authenticated {
-            items.append(
-                SetupRecommendation(
-                    title: "Connect Your Account",
-                    detail: "Authentication is still missing. Run the guided setup once, then refresh this window.",
-                    command: "larkfs init",
-                    icon: "person.crop.circle.badge.exclamationmark"
-                )
-            )
-        }
-
-        if snapshot.doctor.fuseCheck?.ok == false {
-            items.append(
-                SetupRecommendation(
-                    title: "Install FUSE If You Need Local Mounts",
-                    detail: "WebDAV and the future File Provider path can still work without it, but FUSE is required for direct local mounts.",
-                    command: "brew install macfuse",
-                    icon: "shippingbox"
-                )
-            )
-        }
-
-        return items
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 heroPanel
                 if let notice, !notice.isEmpty {
                     noticePanel
-                }
-                if !setupRecommendations.isEmpty {
-                    recommendationsSection
                 }
                 metricsSection
                 healthSection
@@ -134,40 +92,6 @@ struct OverviewView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-        }
-    }
-
-    private var recommendationsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            DashboardSectionHeader(
-                title: "Suggested Next Steps",
-                subtitle: "These are the quickest fixes for the missing pieces in the current snapshot.",
-                systemImage: "list.bullet.clipboard"
-            )
-
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(minimum: 260), spacing: 18),
-                    GridItem(.flexible(minimum: 260), spacing: 18),
-                ],
-                alignment: .leading,
-                spacing: 18
-            ) {
-                ForEach(setupRecommendations) { recommendation in
-                    DashboardPanel {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Label(recommendation.title, systemImage: recommendation.icon)
-                                .font(.headline)
-                            Text(recommendation.detail)
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            CommandSnippet(command: recommendation.command)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 188, alignment: .leading)
-                    }
                 }
             }
         }
@@ -265,14 +189,6 @@ struct OverviewView: View {
         guard let lastUpdatedAt else { return nil }
         return lastUpdatedAt.formatted(date: .omitted, time: .shortened)
     }
-}
-
-private struct SetupRecommendation: Identifiable {
-    let id = UUID()
-    let title: String
-    let detail: String
-    let command: String
-    let icon: String
 }
 
 private struct HealthCheckRow: View {

@@ -13,9 +13,31 @@ final class DashboardStore: ObservableObject {
 
     private let service: LarkFSCLIService
     private let nativeDomainService = NativeFileProviderDomainService()
+    private let terminalCommandService = TerminalCommandService()
+    private var periodicRefreshTask: Task<Void, Never>?
 
     init(service: LarkFSCLIService) {
         self.service = service
+    }
+
+    var syncStatus: MenuBarSyncStatus {
+        MenuBarSyncStatus(
+            snapshot: snapshot,
+            domainStatus: nativeDomainStatus,
+            isLoading: isLoading,
+            lastUpdatedAt: lastUpdatedAt
+        )
+    }
+
+    func startPeriodicRefresh() {
+        guard periodicRefreshTask == nil else { return }
+        periodicRefreshTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                await self.refresh()
+                try? await Task.sleep(for: .seconds(30))
+            }
+        }
     }
 
     func refresh() async {
@@ -60,6 +82,20 @@ final class DashboardStore: ObservableObject {
     func openNativeMountPlan() {
         guard let url = BundlePaths.nativeMountPlanURL else { return }
         NSWorkspace.shared.open(url)
+    }
+
+    func startGuidedSetup() {
+        guard let binaryURL = BundlePaths.larkfsBinaryURL else {
+            lastNotice = "Setup: could not find a runnable larkfs binary. Build the app again or set LARKFS_BIN."
+            return
+        }
+
+        do {
+            try terminalCommandService.openLarkFSInit(binaryURL: binaryURL)
+            lastNotice = "Setup opened in Terminal. Complete the prompts there, then refresh this window."
+        } catch {
+            lastNotice = "Setup: \(error.localizedDescription)"
+        }
     }
 
     private func runNativeDomainAction(_ action: () async throws -> Void) async {
