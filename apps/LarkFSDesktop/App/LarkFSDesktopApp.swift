@@ -6,7 +6,7 @@ struct LarkFSDesktopApp: App {
     @StateObject private var store = DashboardStore(service: LarkFSCLIService())
 
     var body: some Scene {
-        WindowGroup("LarkFS Desktop") {
+        WindowGroup("LarkFS Desktop", id: "main") {
             ContentView(store: store)
         }
         .defaultSize(width: 1240, height: 860)
@@ -23,10 +23,29 @@ struct LarkFSDesktopApp: App {
                     store.openConfigDirectory()
                 }
 
+                Button("Start Guided Setup") {
+                    store.startGuidedSetup()
+                }
+                .keyboardShortcut("i", modifiers: [.command, .shift])
+
                 Button("Open Native Mount Plan") {
                     store.openNativeMountPlan()
                 }
             }
         }
+
+        MenuBarExtra {
+            MenuBarStatusMenu(store: store)
+        } label: {
+            Image(systemName: store.syncStatus.systemImage)
+                .accessibilityLabel("LarkFS Sync Status")
+                .task {
+                    store.startPeriodicRefresh()
+                    if !store.hasLoaded {
+                        await store.refresh()
+                    }
+                }
+        }
+        .menuBarExtraStyle(.window)
     }
 }

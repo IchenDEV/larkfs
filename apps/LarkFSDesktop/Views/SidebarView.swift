@@ -10,18 +10,21 @@ struct SidebarView: View {
                 HStack(spacing: 10) {
                     Image(systemName: section.systemImage)
                         .foregroundStyle(.secondary)
-                        .frame(width: 16)
+                        .symbolRenderingMode(.hierarchical)
+                        .frame(width: 18, height: 28)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(section.title)
+                            .font(.body.weight(.medium))
                             .lineLimit(1)
 
                         Text(detail(for: section))
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
                 }
+                .padding(.vertical, 3)
                 .tag(section)
             }
         }
@@ -31,6 +34,11 @@ struct SidebarView: View {
 
     private func detail(for section: SidebarSection) -> String {
         switch section {
+        case .onboarding:
+            if snapshot.doctor.larkCLI.found && snapshot.doctor.auth.authenticated {
+                return "Core setup ready"
+            }
+            return "Setup needed"
         case .overview:
             if snapshot.doctor.checks.isEmpty {
                 return "No snapshot yet"

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A71E5F4B8C9D4E1F90123457 /* TerminalCommandService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71E5F4B8C9D4E1F90123456 /* TerminalCommandService.swift */; };
+		A71E5F4B8C9D4E1F90123459 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71E5F4B8C9D4E1F90123458 /* OnboardingView.swift */; };
+		A71E5F4B8C9D4E1F9012345B /* OnboardingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71E5F4B8C9D4E1F9012345A /* OnboardingComponents.swift */; };
+		A71E5F4B8C9D4E1F9012345D /* MenuBarStatusMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71E5F4B8C9D4E1F9012345C /* MenuBarStatusMenu.swift */; };
 		2788F189F6D12B6A6236424E /* MountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5CB76760DD12945B8B6E20 /* MountsView.swift */; };
 		2F555D8C6071825F29FB6A0B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF348F30D58A3A0281AFE541 /* AppDelegate.swift */; };
 		38FCF3FDAFDA5E3B3056C4A6 /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB763CD6E945188AA48F2F4 /* DashboardModels.swift */; };
@@ -78,6 +82,10 @@
 		78BD80ED2A540F092FDDAE5C /* DashboardComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardComponents.swift; path = Views/DashboardComponents.swift; sourceTree = "<group>"; };
 		816A708C81E18FF025DB4EC0 /* NativeFileProviderDomainService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NativeFileProviderDomainService.swift; path = Services/NativeFileProviderDomainService.swift; sourceTree = "<group>"; };
 		84E22F1503CAC3BB72610D6E /* FileProviderSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileProviderSupport.swift; path = FileProviderExtension/FileProviderSupport.swift; sourceTree = "<group>"; };
+		A71E5F4B8C9D4E1F90123456 /* TerminalCommandService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TerminalCommandService.swift; path = Services/TerminalCommandService.swift; sourceTree = "<group>"; };
+		A71E5F4B8C9D4E1F90123458 /* OnboardingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Views/OnboardingView.swift; sourceTree = "<group>"; };
+		A71E5F4B8C9D4E1F9012345A /* OnboardingComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingComponents.swift; path = Views/OnboardingComponents.swift; sourceTree = "<group>"; };
+		A71E5F4B8C9D4E1F9012345C /* MenuBarStatusMenu.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MenuBarStatusMenu.swift; path = Views/MenuBarStatusMenu.swift; sourceTree = "<group>"; };
 		89989A8AA3403535BAC5B42A /* AppIconDark.icns */ = {isa = PBXFileReference; includeInIndex = 1; name = AppIconDark.icns; path = Resources/AppIconDark.icns; sourceTree = "<group>"; };
 		8A8919AFDD6903A069BD74F2 /* LarkFSDesktopApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSDesktopApp.swift; path = App/LarkFSDesktopApp.swift; sourceTree = "<group>"; };
 		9041319870A42D868D9C79D1 /* LarkFSNativeBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LarkFSNativeBridge.swift; path = NativeBridge/LarkFSNativeBridge.swift; sourceTree = "<group>"; };
@@ -128,13 +136,17 @@
 				61C194F3389D1214FBD394C8 /* LarkFSCLIService.swift */,
 				816A708C81E18FF025DB4EC0 /* NativeFileProviderDomainService.swift */,
 				BD06AA7C5C4E22ED45C40B74 /* NativeMountCapability.swift */,
+				A71E5F4B8C9D4E1F90123456 /* TerminalCommandService.swift */,
 				BF2264F9158DBAE5AB322A3A /* DashboardStore.swift */,
 				B06C8062CDAC48158C876710 /* AppIconAppearanceService.swift */,
 				61424F4857DAC39690896643 /* BundlePaths.swift */,
 				160C2BD41BCAA3E366C55A74 /* ContentView.swift */,
 				78BD80ED2A540F092FDDAE5C /* DashboardComponents.swift */,
+				A71E5F4B8C9D4E1F9012345C /* MenuBarStatusMenu.swift */,
 				BC5CB76760DD12945B8B6E20 /* MountsView.swift */,
 				291E90D488BFBB4584ACB39B /* NativeMountView.swift */,
+				A71E5F4B8C9D4E1F9012345A /* OnboardingComponents.swift */,
+				A71E5F4B8C9D4E1F90123458 /* OnboardingView.swift */,
 				BEC322E287E4330B0E3EE43B /* OverviewView.swift */,
 				3BED5443DE87B9F3383E1E18 /* SidebarView.swift */,
 				9041319870A42D868D9C79D1 /* LarkFSNativeBridge.swift */,
@@ -336,13 +348,17 @@
 				5FD1588892728A939DAEDAB0 /* LarkFSCLIService.swift in Sources */,
 				BF8C19232605CC8407103035 /* NativeFileProviderDomainService.swift in Sources */,
 				DB42402BBAD013E9811140B1 /* NativeMountCapability.swift in Sources */,
+				A71E5F4B8C9D4E1F90123457 /* TerminalCommandService.swift in Sources */,
 				B2AB7FB9D2B9A76591061F98 /* DashboardStore.swift in Sources */,
 				57B9F8141E71C4725AA832D5 /* AppIconAppearanceService.swift in Sources */,
 				4C9FC80B2F9013F656D95582 /* BundlePaths.swift in Sources */,
 				EDCEA8E7114FED4D84D199BE /* ContentView.swift in Sources */,
 				A5FEE6A0D753E2B6BF9548FC /* DashboardComponents.swift in Sources */,
+				A71E5F4B8C9D4E1F9012345D /* MenuBarStatusMenu.swift in Sources */,
 				2788F189F6D12B6A6236424E /* MountsView.swift in Sources */,
 				62D6DAA2CF2358D488129480 /* NativeMountView.swift in Sources */,
+				A71E5F4B8C9D4E1F9012345B /* OnboardingComponents.swift in Sources */,
+				A71E5F4B8C9D4E1F90123459 /* OnboardingView.swift in Sources */,
 				A1ED34725AC7B18AD3EF18A5 /* OverviewView.swift in Sources */,
 				DC6B7D7AA8AB1ACB4C3C72D5 /* SidebarView.swift in Sources */,
 				814EBA1D374BCCB72523DD8B /* LarkFSNativeBridge.swift in Sources */,

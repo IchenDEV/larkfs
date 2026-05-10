@@ -5,15 +5,15 @@ struct DashboardPanel<Content: View>: View {
 
     var body: some View {
         content
-            .padding(18)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(.regularMaterial)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.06))
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(.separator.opacity(0.22))
             }
     }
 }
@@ -50,7 +50,7 @@ struct MetricCard: View {
                     .font(.headline)
 
                 Text(headline)
-                    .font(.system(size: 30, weight: .semibold))
+                    .font(.system(size: 28, weight: .semibold))
                     .lineLimit(1)
 
                 Text(detail)
@@ -58,7 +58,7 @@ struct MetricCard: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
             }
-            .frame(maxWidth: .infinity, minHeight: 154, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 142, alignment: .leading)
         }
     }
 }
@@ -84,12 +84,12 @@ struct CommandSnippet: View {
 
     var body: some View {
         Text(command)
-            .font(.system(.callout, design: .monospaced))
+            .font(.system(.caption, design: .monospaced).weight(.medium))
             .textSelection(.enabled)
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quinary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(.quinary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 
@@ -105,9 +105,10 @@ struct StatusPill: View {
 
     var body: some View {
         Text(title)
-            .font(.callout.weight(.medium))
+            .font(.caption.weight(.semibold))
+            .lineLimit(1)
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .frame(minHeight: 26)
             .background(backgroundColor, in: Capsule())
             .foregroundStyle(foregroundColor)
     }
@@ -147,17 +148,33 @@ struct ValueBadge: View {
             Text(value)
                 .font(.callout.weight(.semibold))
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.quinary, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .padding(.horizontal, 12)
+        .frame(minWidth: 82, minHeight: 40, alignment: .leading)
+        .background(.quinary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 
 struct DashboardActionButtonStyle: ButtonStyle {
+    let prominent: Bool
+
+    init(prominent: Bool = false) {
+        self.prominent = prominent
+    }
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .font(.callout.weight(.semibold))
+            .lineLimit(1)
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(.quinary.opacity(configuration.isPressed ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .frame(height: 40)
+            .foregroundStyle(prominent ? .white : .primary)
+            .background(background(isPressed: configuration.isPressed), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private func background(isPressed: Bool) -> Color {
+        if prominent {
+            return Color.accentColor.opacity(isPressed ? 0.78 : 0.92)
+        }
+        return Color.secondary.opacity(isPressed ? 0.14 : 0.10)
     }
 }

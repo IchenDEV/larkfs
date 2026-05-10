@@ -71,7 +71,6 @@ struct LarkFSCLIService {
     private func runJSON<T: Decodable>(_ arguments: [String], with runner: CLICommandRunner) async throws -> T {
         let output = try await runner.run(arguments: arguments)
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
 
         if let decoded = decodePayload(T.self, from: output.stdout, decoder: decoder) {
             return decoded

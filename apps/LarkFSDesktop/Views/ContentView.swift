@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var store: DashboardStore
     @Environment(\.colorScheme) private var colorScheme
-    @SceneStorage("selected-section") private var selectedSectionRawValue = SidebarSection.overview.rawValue
+    @SceneStorage("selected-section") private var selectedSectionRawValue = SidebarSection.onboarding.rawValue
 
     private var selectedSection: SidebarSection {
         get { SidebarSection(rawValue: selectedSectionRawValue) ?? .overview }
@@ -60,6 +60,27 @@ struct ContentView: View {
     @ViewBuilder
     private var detailView: some View {
         switch selectedSection {
+        case .onboarding:
+            OnboardingView(
+                snapshot: store.snapshot,
+                domainStatus: store.nativeDomainStatus,
+                isLoading: store.isLoading,
+                notice: store.lastNotice,
+                lastUpdatedAt: store.lastUpdatedAt,
+                startGuidedSetup: store.startGuidedSetup,
+                refresh: {
+                    Task {
+                        await store.refresh()
+                    }
+                },
+                openConfigDirectory: store.openConfigDirectory,
+                showMounts: {
+                    selectedSection = .mounts
+                },
+                showNativeMount: {
+                    selectedSection = .nativeMount
+                }
+            )
         case .overview:
             OverviewView(
                 snapshot: store.snapshot,
