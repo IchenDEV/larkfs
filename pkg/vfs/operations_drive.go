@@ -47,7 +47,7 @@ func (o *Operations) relocateNode(node, oldParent, newParent *VNode, newName str
 	oldParent.mu.Unlock()
 
 	node.Name = newName
-	node.ModTime = time.Now()
+	node.SetModTime(time.Now())
 	newParent.AddChild(node)
 	o.ensureResourceControlFiles(newParent, node)
 	updateSubtreePaths(node)

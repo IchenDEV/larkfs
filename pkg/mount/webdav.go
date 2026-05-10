@@ -142,7 +142,7 @@ func (f *webdavFS) OpenFile(ctx context.Context, name string, flag int, perm os.
 		if flag&os.O_CREATE == 0 {
 			return nil, os.ErrNotExist
 		}
-		newNode, err := f.ops.Create(ctx, name)
+		newNode, err := f.ops.Create(ctx, "/"+name)
 		if err != nil {
 			return nil, err
 		}

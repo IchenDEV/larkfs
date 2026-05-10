@@ -12,7 +12,7 @@ import (
 
 func (o *Operations) writeControlNode(ctx context.Context, node *VNode, data []byte) error {
 	o.controls.Set(node.Path(), data)
-	node.ModTime = time.Now()
+	node.SetModTime(time.Now())
 
 	switch {
 	case strings.HasSuffix(node.Name, "exec.request.json"):
@@ -55,6 +55,13 @@ func (o *Operations) storeViewResult(node *VNode, data []byte) {
 	o.controls.Set(viewPath, data)
 }
 
+var blockedCommands = map[string]bool{
+	"auth logout":  true,
+	"auth revoke":  true,
+	"config init":  true,
+	"config reset": true,
+}
+
 func (o *Operations) executeControlExec(ctx context.Context, node *VNode, data []byte) ([]byte, error) {
 	var req execRequest
 	if err := json.Unmarshal(data, &req); err != nil {
@@ -67,7 +74,18 @@ func (o *Operations) executeControlExec(ctx context.Context, node *VNode, data [
 	if node.Domain != "_system" && !hasDomainPrefix(node.Domain, args) {
 		args = append([]string{node.Domain}, args...)
 	}
+	if isBlockedCommand(args) {
+		return nil, fmt.Errorf("%w: command %q is blocked for safety", ErrUnsupported, strings.Join(args, " "))
+	}
 	return o.cli.Run(ctx, args...)
+}
+
+func isBlockedCommand(args []string) bool {
+	if len(args) < 2 {
+		return false
+	}
+	key := args[0] + " " + args[1]
+	return blockedCommands[key]
 }
 
 func hasDomainPrefix(domain string, args []string) bool {

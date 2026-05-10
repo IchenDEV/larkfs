@@ -15,6 +15,7 @@ import (
 
 	"github.com/IchenDEV/larkfs/pkg/cache"
 	"github.com/IchenDEV/larkfs/pkg/config"
+	lkerr "github.com/IchenDEV/larkfs/pkg/errors"
 	"github.com/IchenDEV/larkfs/pkg/vfs"
 	"github.com/hanwen/go-fuse/v2/fs"
 	"github.com/hanwen/go-fuse/v2/fuse"
@@ -85,6 +86,7 @@ func errnoFromError(err error) syscall.Errno {
 	if err == nil {
 		return 0
 	}
+
 	switch {
 	case errors.Is(err, vfs.ErrReadOnly):
 		return syscall.EROFS
@@ -94,17 +96,12 @@ func errnoFromError(err error) syscall.Errno {
 		return syscall.ENOTSUP
 	}
 
-	msg := strings.ToLower(err.Error())
-	switch {
-	case strings.Contains(msg, "read-only"):
-		return syscall.EROFS
-	case strings.Contains(msg, "not found"):
-		return syscall.ENOENT
-	case strings.Contains(msg, "not supported"), strings.Contains(msg, "unsupported"):
-		return syscall.ENOTSUP
-	default:
-		return syscall.EIO
+	errno := lkerr.ToErrno(err)
+	if errno != syscall.EIO {
+		return errno
 	}
+
+	return syscall.EIO
 }
 
 type larkfsRoot struct {
@@ -191,8 +188,9 @@ type larkfsNode struct {
 	content *cache.ContentCache
 
 	mu       sync.Mutex
-	dataOnce sync.Once
 	cached   []byte
+	loadErr  syscall.Errno
+	loaded   bool
 	dataSize atomic.Int64
 }
 
@@ -220,8 +218,9 @@ func (n *larkfsNode) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.At
 			out.Size = 4096
 		}
 	}
-	out.Atime = uint64(n.vnode.ModTime.Unix())
-	out.Mtime = uint64(n.vnode.ModTime.Unix())
+	mt := n.vnode.GetModTime()
+	out.Atime = uint64(mt.Unix())
+	out.Mtime = uint64(mt.Unix())
 	return 0
 }
 
@@ -391,18 +390,17 @@ func (n *larkfsNode) Setattr(ctx context.Context, fh fs.FileHandle, in *fuse.Set
 
 func (n *larkfsNode) ensureData(ctx context.Context) ([]byte, syscall.Errno) {
 	n.mu.Lock()
-	if n.cached != nil {
-		data := n.cached
-		n.mu.Unlock()
-		return data, 0
+	defer n.mu.Unlock()
+
+	if n.loaded {
+		return n.cached, n.loadErr
 	}
-	n.mu.Unlock()
 
 	path := n.vnode.Path()
 	if data, ok := n.content.Get(path); ok {
-		n.mu.Lock()
 		n.cached = data
-		n.mu.Unlock()
+		n.loaded = true
+		n.loadErr = 0
 		n.dataSize.Store(int64(len(data)))
 		return data, 0
 	}
@@ -410,13 +408,15 @@ func (n *larkfsNode) ensureData(ctx context.Context) ([]byte, syscall.Errno) {
 	data, err := n.ops.Read(ctx, path)
 	if err != nil {
 		slog.Error("read failed", "path", path, "error", err)
+		n.loadErr = syscall.EIO
+		n.loaded = true
 		return nil, syscall.EIO
 	}
 
 	_ = n.content.Set(path, data)
-	n.mu.Lock()
 	n.cached = data
-	n.mu.Unlock()
+	n.loaded = true
+	n.loadErr = 0
 	n.dataSize.Store(int64(len(data)))
 	return data, 0
 }
@@ -424,7 +424,8 @@ func (n *larkfsNode) ensureData(ctx context.Context) ([]byte, syscall.Errno) {
 func (n *larkfsNode) invalidateCache() {
 	n.mu.Lock()
 	n.cached = nil
-	n.dataOnce = sync.Once{}
+	n.loaded = false
+	n.loadErr = 0
 	n.mu.Unlock()
 	n.content.Invalidate(n.vnode.Path())
 }
@@ -469,7 +470,7 @@ func (h *larkfsFileHandle) Write(ctx context.Context, data []byte, off int64) (u
 	}
 	copy(h.data[off:end], data)
 	h.dirty = true
-	h.node.vnode.Size = int64(len(h.data))
+	h.node.vnode.SetSize(int64(len(h.data)))
 	return uint32(len(data)), 0
 }
 
@@ -483,8 +484,8 @@ func (h *larkfsFileHandle) Flush(ctx context.Context) syscall.Errno {
 		slog.Error("flush failed", "path", h.node.vnode.Path(), "error", err)
 		return syscall.EIO
 	}
-	h.node.vnode.Size = int64(len(h.data))
-	h.node.vnode.ModTime = time.Now()
+	h.node.vnode.SetSize(int64(len(h.data)))
+	h.node.vnode.SetModTime(time.Now())
 	h.node.invalidateCache()
 	h.dirty = false
 	return 0

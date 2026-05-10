@@ -81,7 +81,7 @@ func (o *Operations) readContent(ctx context.Context, node *VNode) ([]byte, erro
 			chatID := strings.TrimSuffix(node.Token, "|latest")
 			return o.im.ReadMessages(ctx, chatID)
 		}
-		return nil, nil
+		return []byte{}, nil
 	case "calendar":
 		if node.Token == "_create" {
 			return []byte("# New Event\n\nWrite event details here.\n"), nil
@@ -115,7 +115,7 @@ func (o *Operations) writeContent(ctx context.Context, node *VNode, data []byte)
 			}
 			node.Token = token
 			node.PendingCreate = false
-			node.ModTime = time.Now()
+			node.SetModTime(time.Now())
 			return nil
 		}
 		if node.DocType == doctype.TypeFile && !strings.Contains(node.Token, "|") {
@@ -133,17 +133,17 @@ func (o *Operations) writeContent(ctx context.Context, node *VNode, data []byte)
 			chatID := strings.TrimSuffix(node.Token, "|send")
 			return o.im.SendMessage(ctx, chatID, data)
 		}
-		return fmt.Errorf("read-only")
+		return fmt.Errorf("%w: im resource is not writable", ErrReadOnly)
 	case "calendar":
 		if node.Token == "_create" {
 			return o.calendar.CreateEvent(ctx, data)
 		}
-		return fmt.Errorf("read-only")
+		return fmt.Errorf("%w: calendar event is not writable", ErrReadOnly)
 	case "tasks":
 		if node.Token == "_create" {
 			return o.task.CreateTask(ctx, data)
 		}
-		return fmt.Errorf("read-only")
+		return fmt.Errorf("%w: task is not writable", ErrReadOnly)
 	}
 
 	return fmt.Errorf("unsupported write: %s", node.Path())

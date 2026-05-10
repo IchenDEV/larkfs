@@ -1,9 +1,6 @@
 package vfs
 
-import (
-	"sync"
-	"time"
-)
+import "sync"
 
 type controlStore struct {
 	mu      sync.RWMutex
@@ -36,7 +33,7 @@ func (s *controlStore) Delete(path string) {
 }
 
 func newControlFile(parent *VNode, name string, control ControlKind, action string) *VNode {
-	return &VNode{
+	return newVNodeNow(&VNode{
 		Name:       name,
 		NodeType:   NodeFile,
 		Kind:       NodeKindControl,
@@ -44,9 +41,7 @@ func newControlFile(parent *VNode, name string, control ControlKind, action stri
 		Domain:     parent.Domain,
 		TargetPath: parent.TargetPath,
 		Action:     action,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	}
+	})
 }
 
 func newTargetedControlFile(parent *VNode, name string, control ControlKind, action, targetPath string) *VNode {
@@ -56,7 +51,7 @@ func newTargetedControlFile(parent *VNode, name string, control ControlKind, act
 }
 
 func newControlDir(parent *VNode, name string, control ControlKind, action string) *VNode {
-	return &VNode{
+	return newVNodeNow(&VNode{
 		Name:       name,
 		NodeType:   NodeDir,
 		Kind:       NodeKindControlDir,
@@ -64,7 +59,5 @@ func newControlDir(parent *VNode, name string, control ControlKind, action strin
 		Domain:     parent.Domain,
 		TargetPath: parent.TargetPath,
 		Action:     action,
-		ModTime:    time.Now(),
-		children:   make(map[string]*VNode),
-	}
+	})
 }

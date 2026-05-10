@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -15,6 +16,12 @@ import (
 func (o *Operations) executeDriveReplace(ctx context.Context, node *VNode, req execRequest) ([]byte, error) {
 	if o.drive == nil {
 		return nil, fmt.Errorf("%w: drive adapter not configured", ErrUnsupported)
+	}
+
+	if filePath, ok := requestString(req.Flags, "file_path"); ok {
+		if err := validateFilePath(filePath, o.cacheDir); err != nil {
+			return nil, err
+		}
 	}
 
 	targetPath := req.TargetPath
@@ -53,8 +60,8 @@ func (o *Operations) executeDriveReplace(ctx context.Context, node *VNode, req e
 		}
 		target.Token = newToken
 		target.PendingCreate = false
-		target.Size = int64(len(data))
-		target.ModTime = time.Now()
+		target.SetSize(int64(len(data)))
+		target.SetModTime(time.Now())
 	}
 
 	result, err := json.MarshalIndent(map[string]any{
@@ -114,4 +121,22 @@ func decodeBase64(value string) ([]byte, error) {
 		return data, nil
 	}
 	return base64.RawStdEncoding.DecodeString(value)
+}
+
+func validateFilePath(filePath, cacheDir string) error {
+	if cacheDir == "" {
+		return fmt.Errorf("%w: file_path requires cache-dir to be configured", ErrUnsupported)
+	}
+	abs, err := filepath.Abs(filePath)
+	if err != nil {
+		return fmt.Errorf("resolve file_path: %w", err)
+	}
+	absCache, err := filepath.Abs(cacheDir)
+	if err != nil {
+		return fmt.Errorf("resolve cache-dir: %w", err)
+	}
+	if !strings.HasPrefix(abs, absCache+string(filepath.Separator)) && abs != absCache {
+		return fmt.Errorf("%w: file_path must be within cache directory %s", ErrUnsupported, absCache)
+	}
+	return nil
 }

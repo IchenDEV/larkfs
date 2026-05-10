@@ -24,6 +24,7 @@ type Operations struct {
 	controls   *controlStore
 	readOnly   bool
 	refreshTTL time.Duration
+	cacheDir   string
 }
 
 type OperationsConfig struct {
@@ -38,6 +39,7 @@ type OperationsConfig struct {
 	Meeting  *adapter.MeetingAdapter
 	ReadOnly bool
 	TTL      time.Duration
+	CacheDir string
 }
 
 func NewOperations(cfg OperationsConfig) *Operations {
@@ -48,6 +50,7 @@ func NewOperations(cfg OperationsConfig) *Operations {
 		mail: cfg.Mail, meeting: cfg.Meeting,
 		controls: newControlStore(),
 		readOnly: cfg.ReadOnly, refreshTTL: cfg.TTL,
+		cacheDir: cfg.CacheDir,
 	}
 }
 
@@ -91,19 +94,18 @@ func (o *Operations) ReadDir(ctx context.Context, path string) ([]*VNode, error)
 		if modTime.IsZero() {
 			modTime = time.Now()
 		}
-		child := &VNode{
+		child := newVNodeNow(&VNode{
 			Name:        e.Name,
 			Token:       e.Token,
 			DocType:     e.Type,
 			NodeType:    nt,
 			Kind:        NodeKindResource,
 			Domain:      node.Domain,
-			Size:        e.Size,
-			ModTime:     modTime,
 			CreatedTime: e.CreatedTime,
 			TargetPath:  pathJoin(node.Path(), e.Name),
-			children:    make(map[string]*VNode),
-		}
+		})
+		child.SetSize(e.Size)
+		child.SetModTime(modTime)
 		node.AddChild(child)
 		o.ensureResourceControlFiles(node, child)
 	}
