@@ -16,19 +16,19 @@ struct TerminalCommandService {
     }
 
     func openLarkFSInit(binaryURL: URL) throws {
-        let scriptURL = BundlePaths.configDirectory.appendingPathComponent("larkfs-setup.command")
-        try writeCommandScript(
+        try removeLegacyCommandScript()
+
+        let scriptURL = BundlePaths.configDirectory.appendingPathComponent("larkfs-setup.zsh")
+        try writeShellScript(
             to: scriptURL,
             commandLine: "\(shellQuoted(binaryURL.path)) init",
             title: "LarkFS setup"
         )
 
-        if !NSWorkspace.shared.open(scriptURL) {
-            throw TerminalError.openFailed("Could not open Terminal for \(scriptURL.path).")
-        }
+        try runInTerminal(command: "/bin/zsh \(shellQuoted(scriptURL.path))")
     }
 
-    private func writeCommandScript(to url: URL, commandLine: String, title: String) throws {
+    private func writeShellScript(to url: URL, commandLine: String, title: String) throws {
         do {
             try FileManager.default.createDirectory(
                 at: url.deletingLastPathComponent(),
@@ -62,7 +62,45 @@ struct TerminalCommandService {
         }
     }
 
+    private func runInTerminal(command: String) throws {
+        let source = """
+        tell application "Terminal"
+            activate
+            do script \(appleScriptString(command))
+        end tell
+        """
+
+        guard let script = NSAppleScript(source: source) else {
+            throw TerminalError.openFailed("Could not create Terminal automation script.")
+        }
+
+        var errorInfo: NSDictionary?
+        script.executeAndReturnError(&errorInfo)
+        if let errorInfo {
+            let message = errorInfo[NSAppleScript.errorMessage] as? String
+            throw TerminalError.openFailed(message ?? "Could not open Terminal. Allow Automation access for LarkFSDesktop and try again.")
+        }
+    }
+
+    private func removeLegacyCommandScript() throws {
+        let legacyURL = BundlePaths.configDirectory.appendingPathComponent("larkfs-setup.command")
+        if FileManager.default.fileExists(atPath: legacyURL.path) {
+            do {
+                try FileManager.default.removeItem(at: legacyURL)
+            } catch {
+                throw TerminalError.writeFailed("Could not remove old setup command: \(error.localizedDescription)")
+            }
+        }
+    }
+
     private func shellQuoted(_ value: String) -> String {
         "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
+    }
+
+    private func appleScriptString(_ value: String) -> String {
+        let escaped = value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        return "\"\(escaped)\""
     }
 }
