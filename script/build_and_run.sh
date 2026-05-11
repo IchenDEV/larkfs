@@ -93,7 +93,7 @@ build_swiftpm_app() {
 <plist version="1.0">
 <dict>
   <key>CFBundleIconFile</key>
-  <string>AppIconDark</string>
+  <string>AppIcon</string>
   <key>CFBundleExecutable</key>
   <string>$APP_NAME</string>
   <key>CFBundleIdentifier</key>
