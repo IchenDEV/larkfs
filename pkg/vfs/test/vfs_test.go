@@ -52,11 +52,11 @@ func TestVFSDriveCRUDControlAndRenameBlackbox(t *testing.T) {
 		case strings.HasPrefix(joined, "drive +upload"):
 			uploadCount++
 			return []byte(`{"data":{"file_token":"file_uploaded_` + strconv.Itoa(uploadCount) + `"}}`), nil
-		case strings.HasPrefix(joined, "drive files create_folder"):
+		case strings.HasPrefix(joined, "drive +create-folder"):
 			return []byte(`{"data":{"token":"folder_new"}}`), nil
 		case strings.HasPrefix(joined, "drive files patch"):
 			return []byte(`{"code":0}`), nil
-		case strings.HasPrefix(joined, "drive files delete"):
+		case strings.HasPrefix(joined, "drive +delete"):
 			return []byte(`{"code":0}`), nil
 		case strings.HasPrefix(joined, "drive +move"):
 			return []byte(`{"ok":true}`), nil
@@ -161,7 +161,7 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	runner := &testutil.Runner{Out: []byte(`{"data":[{"name":"Alice"}]}`)}
 	ops := vfs.NewOperations(vfs.OperationsConfig{
 		CLI:  runner,
-		Tree: vfs.NewTree([]string{"contact", "docs", "meetings", "base", "sheets", "vc", "_system"}),
+		Tree: vfs.NewTree([]string{"contact", "docs", "meetings", "base", "sheets", "vc", "event", "markdown", "okr", "slides", "whiteboard", "_system"}),
 		TTL:  time.Minute,
 	})
 
@@ -199,11 +199,21 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	if err != nil || len(view) != 1 {
 		t.Fatalf("ListView() = %+v, %v", view, err)
 	}
-	for _, root := range []string{"/base", "/sheets", "/vc", "/meetings"} {
+	for _, root := range []string{"/base", "/sheets", "/vc", "/meetings", "/event", "/markdown", "/okr", "/slides", "/whiteboard"} {
 		children, err := ops.ReadDir(context.Background(), root)
 		if err != nil || len(children) == 0 {
 			t.Fatalf("ReadDir(%s) = %+v, %v", root, children, err)
 		}
+	}
+
+	if _, err := ops.RunQuery(context.Background(), "/markdown/_queries/fetch.request.json", []byte(`{"flags":{"file-token":"md_token"}}`)); err != nil {
+		t.Fatalf("RunQuery(markdown fetch) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "markdown +fetch --file-token md_token" {
+		t.Fatalf("markdown fetch args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/event/_ops/consume.request.json", []byte(`{"args":["event","consume","im.message.receive_v1","--max-events","1"]}`)); err != nil {
+		t.Fatalf("ExecuteOp(event consume) error: %v", err)
 	}
 }
 

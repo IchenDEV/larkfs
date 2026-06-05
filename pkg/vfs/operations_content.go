@@ -59,7 +59,7 @@ func (o *Operations) fetchEntries(ctx context.Context, node *VNode) (doctype.Lis
 			return o.meeting.ListMeetings(ctx, node.Token)
 		}
 		return o.meeting.ListMeetingContents(node.Token), nil
-	case "approval", "base", "contact", "docs", "minutes", "sheets", "vc", "_system":
+	case "approval", "attendance", "base", "contact", "docs", "event", "markdown", "minutes", "okr", "sheets", "slides", "vc", "whiteboard", "_system":
 		return staticDomainEntries(domain, node.Token), nil
 	}
 
@@ -155,14 +155,20 @@ func staticDomainEntries(domain, token string) doctype.ListResult {
 	}
 
 	names := map[string][]string{
-		"approval": {"instances", "tasks"},
-		"base":     {"bases", "tables", "records", "fields", "views", "dashboards", "forms", "roles", "workflows"},
-		"contact":  {"users", "search"},
-		"docs":     {"search", "by-token", "media", "whiteboard"},
-		"minutes":  {"minutes", "media"},
-		"sheets":   {"spreadsheets", "sheets", "filters"},
-		"vc":       {"meetings", "notes", "recordings"},
-		"_system":  {"api", "schema", "auth", "config", "profile", "doctor", "event"},
+		"approval":   {"instances", "tasks"},
+		"attendance": {"user-tasks"},
+		"base":       {"bases", "blocks", "tables", "records", "fields", "views", "dashboards", "forms", "roles", "workflows", "advanced-permissions"},
+		"contact":    {"users", "search"},
+		"docs":       {"search", "by-token", "media", "whiteboard"},
+		"event":      {"list", "schema", "status", "consume"},
+		"markdown":   {"create", "fetch", "diff", "overwrite", "patch"},
+		"minutes":    {"minutes", "media", "search", "speakers"},
+		"okr":        {"cycles", "objectives", "key-results", "progress", "images"},
+		"sheets":     {"workbooks", "cells", "sheets", "dimensions", "filters", "views", "charts", "images", "pivots", "sparklines"},
+		"slides":     {"presentations", "slides", "media"},
+		"vc":         {"meetings", "events", "notes", "recordings"},
+		"whiteboard": {"query", "update"},
+		"_system":    {"api", "schema", "auth", "config", "profile", "doctor", "event", "update"},
 	}
 	entries := make([]doctype.Entry, 0, len(names[domain]))
 	for _, name := range names[domain] {

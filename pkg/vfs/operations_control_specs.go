@@ -25,18 +25,26 @@ func queryActions(domain string) []string {
 		return []string{"search", "fetch"}
 	case "approval":
 		return []string{"instances", "tasks"}
+	case "attendance":
+		return []string{"user-tasks"}
 	case "base":
-		return []string{"data-query", "table-list", "record-list", "field-list", "view-list", "dashboard-list", "workflow-list"}
+		return []string{"data-query", "base-get", "base-block-list", "table-list", "table-get", "record-list", "record-get", "record-search", "field-list", "field-get", "view-list", "dashboard-list", "workflow-list", "form-list", "role-list"}
 	case "drive":
-		return []string{"comments", "statistics", "view-records", "metas"}
+		return []string{"search", "inspect", "comments", "statistics", "view-records", "metas", "cover", "preview", "secure-label-list", "status", "version-history"}
+	case "event":
+		return []string{"list", "schema", "status"}
 	case "im":
 		return []string{"chat-search", "messages-search", "chat-messages-list", "threads-messages-list"}
 	case "mail":
-		return []string{"triage", "thread", "message"}
+		return []string{"triage", "thread", "message", "messages", "signature", "lint-html"}
+	case "markdown":
+		return []string{"fetch", "diff"}
 	case "minutes":
-		return []string{"get", "download"}
+		return []string{"get", "search", "download"}
+	case "okr":
+		return []string{"cycle-list", "cycle-detail", "progress-get", "progress-list"}
 	case "vc", "meetings":
-		return []string{"search", "notes", "recording"}
+		return []string{"search", "notes", "recording", "meeting-events"}
 	case "calendar":
 		return []string{"agenda", "freebusy", "suggestion"}
 	case "tasks":
@@ -44,9 +52,11 @@ func queryActions(domain string) []string {
 	case "wiki":
 		return []string{"spaces", "nodes"}
 	case "sheets":
-		return []string{"info", "read", "find"}
+		return []string{"workbook-info", "csv-get", "cells-get", "cells-search", "sheet-info", "chart-list", "filter-list", "filter-view-list", "float-image-list", "pivot-list", "sparkline-list"}
+	case "whiteboard":
+		return []string{"query"}
 	case "_system":
-		return []string{"schema", "doctor"}
+		return []string{"schema", "doctor", "event-list", "event-status"}
 	default:
 		return nil
 	}
@@ -55,7 +65,7 @@ func queryActions(domain string) []string {
 func opActions(domain string) []string {
 	switch domain {
 	case "drive":
-		return []string{"upload", "download", "import", "export", "move", "delete", "replace", "add-comment", "task-result"}
+		return []string{"upload", "download", "import", "export", "export-download", "move", "delete", "replace", "add-comment", "apply-permission", "create-folder", "create-shortcut", "pull", "push", "secure-label-update", "sync", "task-result", "version-delete", "version-get", "version-revert"}
 	case "wiki":
 		return []string{"node-create"}
 	case "im":
@@ -65,23 +75,33 @@ func opActions(domain string) []string {
 	case "tasks":
 		return []string{"create", "update", "assign", "comment", "complete", "reopen", "followers", "reminder", "tasklist-create", "tasklist-task-add", "subtask"}
 	case "mail":
-		return []string{"send", "draft-create", "draft-edit", "reply", "reply-all", "forward", "watch"}
+		return []string{"send", "draft-create", "draft-edit", "draft-send", "reply", "reply-all", "forward", "send-receipt", "decline-receipt", "share-to-chat", "template-create", "template-update", "watch"}
 	case "approval":
 		return []string{"approve", "reject", "transfer", "comment"}
 	case "base":
-		return []string{"base-create", "base-copy", "table-create", "table-update", "table-delete", "record-upsert", "record-delete", "field-create", "field-update", "field-delete", "view-create", "view-delete", "dashboard-create", "workflow-create"}
+		return []string{"advperm-enable", "advperm-disable", "base-create", "base-copy", "base-block-create", "base-block-delete", "base-block-move", "base-block-rename", "table-create", "table-update", "table-delete", "record-upsert", "record-delete", "record-batch-create", "record-batch-update", "record-upload-attachment", "record-remove-attachment", "field-create", "field-update", "field-delete", "view-create", "view-delete", "dashboard-create", "dashboard-update", "dashboard-delete", "dashboard-arrange", "workflow-create", "workflow-update", "workflow-enable", "workflow-disable", "form-create", "form-update", "form-delete", "form-submit", "role-create", "role-update", "role-delete"}
 	case "docs":
-		return []string{"create", "update", "media-download", "media-insert", "media-preview", "whiteboard-update"}
+		return []string{"create", "update", "media-download", "media-insert", "media-preview", "media-upload", "whiteboard-update"}
+	case "event":
+		return []string{"consume", "stop"}
+	case "markdown":
+		return []string{"create", "overwrite", "patch"}
 	case "minutes":
-		return []string{"download"}
+		return []string{"download", "speaker-replace", "update", "upload"}
+	case "okr":
+		return []string{"progress-create", "progress-update", "progress-delete", "upload-image"}
 	case "vc", "meetings":
-		return []string{"notes", "recording"}
+		return []string{"meeting-join", "meeting-leave", "notes", "recording"}
 	case "sheets":
-		return []string{"create", "append", "write", "write-image", "export"}
+		return []string{"workbook-create", "workbook-export", "csv-put", "cells-set", "cells-batch-clear", "cells-batch-set-style", "cells-clear", "cells-merge", "cells-replace", "cells-set-image", "cells-set-style", "cells-unmerge", "cols-resize", "rows-resize", "dim-delete", "dim-freeze", "dim-group", "dim-hide", "dim-insert", "dim-move", "dim-ungroup", "dim-unhide", "dropdown-delete", "dropdown-set", "dropdown-update", "filter-create", "filter-delete", "filter-update", "filter-view-create", "filter-view-delete", "filter-view-update", "float-image-create", "float-image-delete", "float-image-update", "pivot-create", "pivot-delete", "pivot-update", "range-copy", "range-fill", "range-move", "range-sort", "sheet-copy", "sheet-create", "sheet-delete", "sheet-hide", "sheet-move", "sheet-rename", "sheet-set-tab-color", "sheet-unhide", "sparkline-create", "sparkline-delete", "sparkline-update"}
+	case "slides":
+		return []string{"create", "media-upload", "replace-slide"}
+	case "whiteboard":
+		return []string{"update"}
 	case "contact":
 		return []string{"search-user", "get-user"}
 	case "_system":
-		return []string{"api", "schema", "doctor", "auth", "config", "profile", "event-subscribe"}
+		return []string{"api", "schema", "doctor", "auth", "config", "profile", "event-consume", "event-stop", "update"}
 	default:
 		return nil
 	}
@@ -93,6 +113,9 @@ func querySpec(domain, action string) (actionSpec, bool) {
 			"instances": {args: []string{"approval", "instances", "list"}, pageAll: true},
 			"tasks":     {args: []string{"approval", "tasks", "list"}, pageAll: true},
 		},
+		"attendance": {
+			"user-tasks": {args: []string{"attendance", "user_tasks", "query"}, pageAll: true},
+		},
 		"contact": {
 			"search-user": {args: []string{"contact", "+search-user"}, queryArg: "--query"},
 			"get-user":    {args: []string{"contact", "+get-user"}},
@@ -102,10 +125,22 @@ func querySpec(domain, action string) (actionSpec, bool) {
 			"fetch":  {args: []string{"docs", "+fetch"}},
 		},
 		"drive": {
-			"comments":     {args: []string{"drive", "file.comments", "list"}, pageAll: true},
-			"statistics":   {args: []string{"drive", "file.statistics", "get"}},
-			"view-records": {args: []string{"drive", "file.view_records", "list"}, pageAll: true},
-			"metas":        {args: []string{"drive", "metas", "batch_query"}},
+			"search":            {args: []string{"drive", "+search"}, queryArg: "--query"},
+			"inspect":           {args: []string{"drive", "+inspect"}},
+			"comments":          {args: []string{"drive", "file.comments", "list"}, pageAll: true},
+			"statistics":        {args: []string{"drive", "file.statistics", "get"}},
+			"view-records":      {args: []string{"drive", "file.view_records", "list"}, pageAll: true},
+			"metas":             {args: []string{"drive", "metas", "batch_query"}},
+			"cover":             {args: []string{"drive", "+cover"}},
+			"preview":           {args: []string{"drive", "+preview"}},
+			"secure-label-list": {args: []string{"drive", "+secure-label-list"}},
+			"status":            {args: []string{"drive", "+status"}},
+			"version-history":   {args: []string{"drive", "+version-history"}},
+		},
+		"event": {
+			"list":   {args: []string{"event", "list", "--json"}},
+			"schema": {args: []string{"event", "schema"}},
+			"status": {args: []string{"event", "status", "--json"}},
 		},
 		"im": {
 			"chat-search":           {args: []string{"im", "+chat-search"}, queryArg: "--keyword"},
@@ -114,23 +149,39 @@ func querySpec(domain, action string) (actionSpec, bool) {
 			"threads-messages-list": {args: []string{"im", "+threads-messages-list"}},
 		},
 		"mail": {
-			"triage":  {args: []string{"mail", "+triage"}, queryArg: "--query"},
-			"thread":  {args: []string{"mail", "+thread"}},
-			"message": {args: []string{"mail", "+message"}},
+			"triage":    {args: []string{"mail", "+triage"}, queryArg: "--query"},
+			"thread":    {args: []string{"mail", "+thread"}},
+			"message":   {args: []string{"mail", "+message"}},
+			"messages":  {args: []string{"mail", "+messages"}},
+			"signature": {args: []string{"mail", "+signature"}},
+			"lint-html": {args: []string{"mail", "+lint-html"}},
+		},
+		"markdown": {
+			"fetch": {args: []string{"markdown", "+fetch"}},
+			"diff":  {args: []string{"markdown", "+diff"}},
 		},
 		"minutes": {
 			"get":      {args: []string{"minutes", "minutes", "get"}},
+			"search":   {args: []string{"minutes", "+search"}, queryArg: "--query"},
 			"download": {args: []string{"minutes", "+download"}},
 		},
+		"okr": {
+			"cycle-list":    {args: []string{"okr", "+cycle-list"}},
+			"cycle-detail":  {args: []string{"okr", "+cycle-detail"}},
+			"progress-get":  {args: []string{"okr", "+progress-get"}},
+			"progress-list": {args: []string{"okr", "+progress-list"}},
+		},
 		"vc": {
-			"search":    {args: []string{"vc", "+search"}},
-			"notes":     {args: []string{"vc", "+notes"}},
-			"recording": {args: []string{"vc", "+recording"}},
+			"search":         {args: []string{"vc", "+search"}},
+			"notes":          {args: []string{"vc", "+notes"}},
+			"recording":      {args: []string{"vc", "+recording"}},
+			"meeting-events": {args: []string{"vc", "+meeting-events"}},
 		},
 		"meetings": {
-			"search":    {args: []string{"vc", "+search"}},
-			"notes":     {args: []string{"vc", "+notes"}},
-			"recording": {args: []string{"vc", "+recording"}},
+			"search":         {args: []string{"vc", "+search"}},
+			"notes":          {args: []string{"vc", "+notes"}},
+			"recording":      {args: []string{"vc", "+recording"}},
+			"meeting-events": {args: []string{"vc", "+meeting-events"}},
 		},
 		"calendar": {
 			"agenda":     {args: []string{"calendar", "+agenda"}},
@@ -145,22 +196,43 @@ func querySpec(domain, action string) (actionSpec, bool) {
 			"nodes":  {args: []string{"wiki", "nodes", "list"}, pageAll: true},
 		},
 		"sheets": {
-			"info": {args: []string{"sheets", "+info"}},
-			"read": {args: []string{"sheets", "+read"}},
-			"find": {args: []string{"sheets", "+find"}},
+			"workbook-info":    {args: []string{"sheets", "+workbook-info"}},
+			"csv-get":          {args: []string{"sheets", "+csv-get"}},
+			"cells-get":        {args: []string{"sheets", "+cells-get"}},
+			"cells-search":     {args: []string{"sheets", "+cells-search"}},
+			"sheet-info":       {args: []string{"sheets", "+sheet-info"}},
+			"chart-list":       {args: []string{"sheets", "+chart-list"}},
+			"filter-list":      {args: []string{"sheets", "+filter-list"}},
+			"filter-view-list": {args: []string{"sheets", "+filter-view-list"}},
+			"float-image-list": {args: []string{"sheets", "+float-image-list"}},
+			"pivot-list":       {args: []string{"sheets", "+pivot-list"}},
+			"sparkline-list":   {args: []string{"sheets", "+sparkline-list"}},
 		},
 		"base": {
-			"data-query":     {args: []string{"base", "+data-query"}},
-			"table-list":     {args: []string{"base", "+table-list"}},
-			"record-list":    {args: []string{"base", "+record-list"}},
-			"field-list":     {args: []string{"base", "+field-list"}},
-			"view-list":      {args: []string{"base", "+view-list"}},
-			"dashboard-list": {args: []string{"base", "+dashboard-list"}},
-			"workflow-list":  {args: []string{"base", "+workflow-list"}},
+			"data-query":      {args: []string{"base", "+data-query"}},
+			"base-get":        {args: []string{"base", "+base-get"}},
+			"base-block-list": {args: []string{"base", "+base-block-list"}},
+			"table-list":      {args: []string{"base", "+table-list"}},
+			"table-get":       {args: []string{"base", "+table-get"}},
+			"record-list":     {args: []string{"base", "+record-list"}},
+			"record-get":      {args: []string{"base", "+record-get"}},
+			"record-search":   {args: []string{"base", "+record-search"}},
+			"field-list":      {args: []string{"base", "+field-list"}},
+			"field-get":       {args: []string{"base", "+field-get"}},
+			"view-list":       {args: []string{"base", "+view-list"}},
+			"dashboard-list":  {args: []string{"base", "+dashboard-list"}},
+			"workflow-list":   {args: []string{"base", "+workflow-list"}},
+			"form-list":       {args: []string{"base", "+form-list"}},
+			"role-list":       {args: []string{"base", "+role-list"}},
 		},
 		"_system": {
-			"schema": {args: []string{"schema"}},
-			"doctor": {args: []string{"doctor", "--format", "json"}},
+			"schema":       {args: []string{"schema"}},
+			"doctor":       {args: []string{"doctor", "--format", "json"}},
+			"event-list":   {args: []string{"event", "list", "--json"}},
+			"event-status": {args: []string{"event", "status", "--json"}},
+		},
+		"whiteboard": {
+			"query": {args: []string{"whiteboard", "+query"}},
 		},
 	}
 	spec, ok := specs[domain][action]
@@ -182,109 +254,16 @@ func actionSpecFor(domain, action string) (actionSpec, bool) {
 			return actionSpec{args: []string{"config"}}, true
 		case "profile":
 			return actionSpec{args: []string{"profile"}}, true
-		case "event-subscribe":
-			return actionSpec{args: []string{"event", "+subscribe"}}, true
+		case "event-consume":
+			return actionSpec{args: []string{"event", "consume"}}, true
+		case "event-stop":
+			return actionSpec{args: []string{"event", "stop"}}, true
+		case "update":
+			return actionSpec{args: []string{"update"}}, true
 		}
 	}
 	spec, ok := domainActionSpecs()[domain][action]
 	return spec, ok
-}
-
-func domainActionSpecs() map[string]map[string]actionSpec {
-	return map[string]map[string]actionSpec{
-		"drive": {
-			"upload":      {args: []string{"drive", "+upload"}},
-			"download":    {args: []string{"drive", "+download"}},
-			"import":      {args: []string{"drive", "+import"}},
-			"export":      {args: []string{"drive", "+export"}},
-			"move":        {args: []string{"drive", "+move"}},
-			"delete":      {args: []string{"drive", "files", "delete"}},
-			"add-comment": {args: []string{"drive", "+add-comment"}},
-			"task-result": {args: []string{"drive", "+task_result"}},
-		},
-		"wiki": {"node-create": {args: []string{"wiki", "+node-create"}}},
-		"im": {
-			"chat-create":                 {args: []string{"im", "+chat-create"}},
-			"chat-update":                 {args: []string{"im", "+chat-update"}},
-			"messages-send":               {args: []string{"im", "+messages-send"}},
-			"messages-reply":              {args: []string{"im", "+messages-reply"}},
-			"messages-resources-download": {args: []string{"im", "+messages-resources-download"}},
-			"reactions":                   {args: []string{"im", "reactions"}},
-			"pins":                        {args: []string{"im", "pins"}},
-		},
-		"calendar": {
-			"create": {args: []string{"calendar", "+create"}},
-			"rsvp":   {args: []string{"calendar", "+rsvp"}},
-		},
-		"tasks": {
-			"create":            {args: []string{"task", "+create"}},
-			"update":            {args: []string{"task", "+update"}},
-			"assign":            {args: []string{"task", "+assign"}},
-			"comment":           {args: []string{"task", "+comment"}},
-			"complete":          {args: []string{"task", "+complete"}},
-			"reopen":            {args: []string{"task", "+reopen"}},
-			"followers":         {args: []string{"task", "+followers"}},
-			"reminder":          {args: []string{"task", "+reminder"}},
-			"tasklist-create":   {args: []string{"task", "+tasklist-create"}},
-			"tasklist-task-add": {args: []string{"task", "+tasklist-task-add"}},
-			"subtask":           {args: []string{"task", "subtasks"}},
-		},
-		"mail": {
-			"send":         {args: []string{"mail", "+send"}},
-			"draft-create": {args: []string{"mail", "+draft-create"}},
-			"draft-edit":   {args: []string{"mail", "+draft-edit"}},
-			"reply":        {args: []string{"mail", "+reply"}},
-			"reply-all":    {args: []string{"mail", "+reply-all"}},
-			"forward":      {args: []string{"mail", "+forward"}},
-			"watch":        {args: []string{"mail", "+watch"}},
-		},
-		"approval": {
-			"approve":  {args: []string{"approval", "tasks", "approve"}},
-			"reject":   {args: []string{"approval", "tasks", "reject"}},
-			"transfer": {args: []string{"approval", "tasks", "transfer"}},
-			"comment":  {args: []string{"approval", "tasks", "comment"}},
-		},
-		"base": {
-			"base-create":      {args: []string{"base", "+base-create"}},
-			"base-copy":        {args: []string{"base", "+base-copy"}},
-			"table-create":     {args: []string{"base", "+table-create"}},
-			"table-update":     {args: []string{"base", "+table-update"}},
-			"table-delete":     {args: []string{"base", "+table-delete"}},
-			"record-upsert":    {args: []string{"base", "+record-upsert"}},
-			"record-delete":    {args: []string{"base", "+record-delete"}},
-			"field-create":     {args: []string{"base", "+field-create"}},
-			"field-update":     {args: []string{"base", "+field-update"}},
-			"field-delete":     {args: []string{"base", "+field-delete"}},
-			"view-create":      {args: []string{"base", "+view-create"}},
-			"view-delete":      {args: []string{"base", "+view-delete"}},
-			"dashboard-create": {args: []string{"base", "+dashboard-create"}},
-			"workflow-create":  {args: []string{"base", "+workflow-create"}},
-		},
-		"docs": {
-			"create":            {args: []string{"docs", "+create"}},
-			"update":            {args: []string{"docs", "+update"}},
-			"media-download":    {args: []string{"docs", "+media-download"}},
-			"media-insert":      {args: []string{"docs", "+media-insert"}},
-			"media-preview":     {args: []string{"docs", "+media-preview"}},
-			"whiteboard-update": {args: []string{"docs", "+whiteboard-update"}},
-		},
-		"minutes": {"download": {args: []string{"minutes", "+download"}}},
-		"vc": {
-			"notes":     {args: []string{"vc", "+notes"}},
-			"recording": {args: []string{"vc", "+recording"}},
-		},
-		"sheets": {
-			"create":      {args: []string{"sheets", "+create"}},
-			"append":      {args: []string{"sheets", "+append"}},
-			"write":       {args: []string{"sheets", "+write"}},
-			"write-image": {args: []string{"sheets", "+write-image"}},
-			"export":      {args: []string{"sheets", "+export"}},
-		},
-		"contact": {
-			"search-user": {args: []string{"contact", "+search-user"}},
-			"get-user":    {args: []string{"contact", "+get-user"}},
-		},
-	}
 }
 
 var _ clipkg.Runner = (*clipkg.Executor)(nil)

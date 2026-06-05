@@ -53,7 +53,7 @@ cmd/larkfs → pkg/mount → pkg/vfs → pkg/adapter → pkg/doctype → pkg/cli
 
 9. **WebDAV ContentTyper** — `vnodeFileInfo` implements `webdav.ContentTyper` to return MIME types based on file extension. This prevents `x/net/webdav`'s `findContentType` from opening and reading files during PROPFIND, which previously caused `Internal Server Error` appended to XML responses.
 
-10. **WebDAV file creation** — `OpenFile` supports `os.O_CREATE` flag. `Operations.Create` creates docx documents via `docs +create` in the parent folder, then `io.Copy` writes body content via `docs +update`.
+10. **WebDAV file creation** — `OpenFile` supports `os.O_CREATE` flag. `Operations.Create` creates docx documents via `docs +create --api-version v2` in the parent folder, then `io.Copy` writes body content via `docs +update --api-version v2`.
 
 11. **FUSE errno mapping** — FUSE CRUD paths must not collapse all errors to `EIO`. VFS exposes `ErrReadOnly`, `ErrNotFound`, and `ErrUnsupported`; `pkg/mount/fuse.go` maps them to `EROFS`, `ENOENT`, and `ENOTSUP` so Finder, editors, and shell commands can react correctly. Unknown errors may still fall back to `EIO`.
 
@@ -63,12 +63,12 @@ cmd/larkfs → pkg/mount → pkg/vfs → pkg/adapter → pkg/doctype → pkg/cli
 
 All `lark-cli` API responses wrap data in a `data` field:
 - **Raw API commands** (e.g. `drive files list`): `{"code": 0, "data": {...}}`
-- **Skill commands** (prefixed with `+`, e.g. `sheets +info`): `{"ok": true, "data": {...}}`
+- **Skill commands** (prefixed with `+`, e.g. `sheets +workbook-info`): `{"ok": true, "data": {...}}`
 
 Always unmarshal into `struct { Data struct { ... } \`json:"data"\` }`. Never expect top-level fields.
 
 **Skill commands (`+`) vs raw commands:**
-- Skill commands often do NOT support `--format json` (e.g. `sheets +info`, `base +table-list`). They always output JSON by default.
+- Skill commands have command-specific flags; current shortcuts generally accept `--format json`, but check help before adding flags to a new call.
 - Raw API commands (`drive files list`, `im chats list`) support `--format json`, `--page-all`, etc.
 - When in doubt, run `lark-cli <cmd> --help` to check available flags.
 

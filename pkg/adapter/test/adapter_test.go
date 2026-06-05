@@ -21,10 +21,10 @@ func TestDriveAdapterRoutesAndCaches(t *testing.T) {
 			return []byte(`{"data":{"files":[{"token":"doc_1","name":"Doc","type":"docx"},{"token":"fld_1","name":"Folder","type":"folder"}],"has_more":true,"next_page_token":"n"}}`), nil
 		case strings.HasPrefix(joined, "docs +fetch"):
 			return []byte(`{"data":{"markdown":"# Doc"}}`), nil
-		case strings.HasPrefix(joined, "sheets +read"):
-			return []byte(`{"data":{"valueRange":{"values":[["A"]]}}}`), nil
-		case strings.HasPrefix(joined, "sheets +info"):
-			return []byte(`{"data":{"sheets":{"sheets":[{"sheet_id":"s1","title":"Sheet One"}]}}}`), nil
+		case strings.HasPrefix(joined, "sheets +csv-get"):
+			return []byte(`{"data":{"csv":"A\n"}}`), nil
+		case strings.HasPrefix(joined, "sheets +workbook-info"):
+			return []byte(`{"data":{"sheets":[{"sheet_id":"s1","title":"Sheet One"}]}}`), nil
 		case strings.HasPrefix(joined, "base +record-upsert"):
 			return []byte(`{"ok":true}`), nil
 		case strings.HasPrefix(joined, "docs +create"):
@@ -33,7 +33,7 @@ func TestDriveAdapterRoutesAndCaches(t *testing.T) {
 			return []byte(`{"data":{"file_token":"file_new"}}`), nil
 		case strings.HasPrefix(joined, "drive files patch"):
 			return []byte(`{"code":0}`), nil
-		case strings.HasPrefix(joined, "drive files delete"):
+		case strings.HasPrefix(joined, "drive +delete"):
 			return []byte(`{"code":0}`), nil
 		default:
 			t.Fatalf("unexpected args: %v", args)
