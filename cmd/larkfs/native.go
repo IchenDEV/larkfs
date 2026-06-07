@@ -46,7 +46,7 @@ func newNativeCmd() *cobra.Command {
 	f.StringVar(&cfg.CacheSize, "cache-size", config.DefaultCacheSize, "Cache size limit")
 	f.IntVar(&cfg.MetadataTTL, "metadata-ttl", 60, "Metadata cache TTL in seconds")
 	f.BoolVar(&cfg.ReadOnly, "read-only", true, "Expose the native bridge as read-only")
-	f.StringVar(&cfg.Domains, "domains", "drive,wiki,im,calendar,tasks,mail,meetings,approval,base,contact,docs,minutes,sheets,vc,_system", "Enabled domains (comma-separated)")
+	f.StringVar(&cfg.Domains, "domains", config.DefaultDomainsValue, "Enabled domains (comma-separated)")
 	f.StringVar(&cfg.LarkCLIPath, "lark-cli", "", "Path to lark-cli binary (auto-detect)")
 
 	cmd.AddCommand(

@@ -87,28 +87,33 @@ func (h *FolderHandler) Write(_ context.Context, _ string, _ []byte) error {
 }
 
 func (h *FolderHandler) Create(ctx context.Context, parentToken string, name string, _ []byte) (string, error) {
-	params := cli.JSONParam(map[string]any{"folder_token": parentToken})
-	data := cli.JSONParam(map[string]any{"name": name})
-	out, err := h.exec.Run(ctx,
-		"drive", "files", "create_folder",
-		"--params", params,
-		"--data", data)
+	args := []string{"drive", "+create-folder", "--name", name}
+	if parentToken != "" {
+		args = append(args, "--folder-token", parentToken)
+	}
+	out, err := h.exec.Run(ctx, args...)
 	if err != nil {
 		return "", err
 	}
 	var result struct {
 		Data struct {
-			Token string `json:"token"`
+			Token       string `json:"token"`
+			FileToken   string `json:"file_token"`
+			FolderToken string `json:"folder_token"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
-	return result.Data.Token, nil
+	if result.Data.Token != "" {
+		return result.Data.Token, nil
+	}
+	if result.Data.FileToken != "" {
+		return result.Data.FileToken, nil
+	}
+	return result.Data.FolderToken, nil
 }
 
 func (h *FolderHandler) Delete(ctx context.Context, token string) error {
-	params := cli.JSONParam(map[string]any{"file_token": token, "type": "folder"})
-	_, err := h.exec.Run(ctx, "drive", "files", "delete", "--params", params)
-	return err
+	return deleteDriveResource(ctx, h.exec, token, TypeFolder)
 }

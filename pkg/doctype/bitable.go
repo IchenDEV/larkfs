@@ -122,9 +122,7 @@ func (h *BitableHandler) Create(_ context.Context, _ string, _ string, _ []byte)
 
 func (h *BitableHandler) Delete(ctx context.Context, token string) error {
 	parts := strings.SplitN(token, "|", 2)
-	params := cli.JSONParam(map[string]any{"file_token": parts[0], "type": "bitable"})
-	_, err := h.exec.Run(ctx, "drive", "files", "delete", "--params", params)
-	return err
+	return deleteDriveResource(ctx, h.exec, parts[0], TypeBitable)
 }
 
 func (h *BitableHandler) readMeta(ctx context.Context, token string) ([]byte, error) {

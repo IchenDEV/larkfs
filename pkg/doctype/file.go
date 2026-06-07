@@ -74,7 +74,5 @@ func (h *FileHandler) Create(ctx context.Context, parentToken string, name strin
 }
 
 func (h *FileHandler) Delete(ctx context.Context, token string) error {
-	params := cli.JSONParam(map[string]any{"file_token": token, "type": "file"})
-	_, err := h.exec.Run(ctx, "drive", "files", "delete", "--params", params)
-	return err
+	return deleteDriveResource(ctx, h.exec, token, TypeFile)
 }

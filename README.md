@@ -12,7 +12,7 @@
 
 ---
 
-将飞书/Lark 的资源映射为本地可读写的文件目录。核心路径覆盖 Drive、Wiki、IM、Calendar、Tasks、Mail、Meetings，并通过控制节点补充 Approval、Base、Contact、Docs、Minutes、Sheets、VC、`_system` 等命令型能力。
+将飞书/Lark 的资源映射为本地可读写的文件目录。核心路径覆盖 Drive、Wiki、IM、Calendar、Tasks、Mail、Meetings，并通过控制节点提供 Approval、Attendance、Base、Contact、Docs、Event、Markdown、Minutes、OKR、Sheets、Slides、VC、Whiteboard、`_system` 等命令型能力。
 
 ## Why
 
@@ -29,7 +29,7 @@
 | **WebDAV 模式** | 无需内核模块，Finder / 文件管理器直连 |
 | **macOS Desktop app（预览）** | SwiftUI 宿主 app，汇总认证/挂载/健康状态，并开始接入 File Provider 原生挂载 |
 | **多类型文档** | docx → Markdown, sheet → 目录/CSV, bitable → 目录/JSONL, file → 原样下载 |
-| **多域映射** | Drive · Wiki · IM · Calendar · Tasks · Mail · Meetings · Approval · Base · Contact · Docs · Minutes · Sheets · VC · `_system` |
+| **多域映射** | Drive · Wiki · IM · Calendar · Tasks · Mail · Meetings · Approval · Attendance · Base · Contact · Docs · Event · Markdown · Minutes · OKR · Sheets · Slides · VC · Whiteboard · `_system` |
 | **同名冲突解决** | 自动 `name~token` 后缀，持久化映射保证路径稳定 |
 | **三级缓存** | in-memory → 磁盘 LRU ContentCache → 远程拉取，TTL 自动过期 |
 | **重试 & 认证恢复** | API 限流自动指数退避，token 过期自动刷新 |

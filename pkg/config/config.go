@@ -10,6 +10,36 @@ import (
 
 const DefaultCacheSize = "500MB"
 
+var defaultDomains = []string{
+	"drive",
+	"wiki",
+	"im",
+	"calendar",
+	"tasks",
+	"mail",
+	"meetings",
+	"approval",
+	"attendance",
+	"base",
+	"contact",
+	"docs",
+	"event",
+	"markdown",
+	"minutes",
+	"okr",
+	"sheets",
+	"slides",
+	"vc",
+	"whiteboard",
+	"_system",
+}
+
+var DefaultDomainsValue = strings.Join(defaultDomains, ",")
+
+func DefaultDomains() []string {
+	return append([]string(nil), defaultDomains...)
+}
+
 type MountConfig struct {
 	Mountpoint  string
 	Daemon      bool
@@ -75,7 +105,7 @@ func (c *MountConfig) Resolve() error {
 
 func (c *MountConfig) EnabledDomains() []string {
 	if c.Domains == "" {
-		return []string{"drive", "wiki", "im", "calendar", "tasks", "mail", "meetings", "approval", "base", "contact", "docs", "minutes", "sheets", "vc", "_system"}
+		return DefaultDomains()
 	}
 	return strings.Split(c.Domains, ",")
 }

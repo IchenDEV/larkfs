@@ -11,7 +11,11 @@ import (
 )
 
 func TestVFSControlActionsAcrossDomainsBlackbox(t *testing.T) {
-	domains := []string{"approval", "base", "calendar", "contact", "docs", "drive", "im", "mail", "meetings", "minutes", "sheets", "tasks", "vc", "wiki", "_system"}
+	domains := []string{
+		"approval", "attendance", "base", "calendar", "contact", "docs", "drive",
+		"event", "im", "mail", "markdown", "meetings", "minutes", "okr", "sheets",
+		"slides", "tasks", "vc", "whiteboard", "wiki", "_system",
+	}
 	runner := &testutil.Runner{Out: []byte(`{"ok":true}`)}
 	ops := vfs.NewOperations(vfs.OperationsConfig{
 		CLI:  runner,
@@ -23,7 +27,9 @@ func TestVFSControlActionsAcrossDomainsBlackbox(t *testing.T) {
 		if _, err := ops.ReadDir(context.Background(), "/"+domain+"/_meta"); err != nil {
 			t.Fatalf("ReadDir(%s meta) error: %v", domain, err)
 		}
-		if domain == "approval" || domain == "base" || domain == "contact" || domain == "docs" || domain == "minutes" || domain == "sheets" || domain == "vc" || domain == "_system" {
+		if domain == "approval" || domain == "attendance" || domain == "base" || domain == "contact" || domain == "docs" ||
+			domain == "event" || domain == "markdown" || domain == "minutes" || domain == "okr" || domain == "sheets" ||
+			domain == "slides" || domain == "vc" || domain == "whiteboard" || domain == "_system" {
 			if entries, err := ops.ReadDir(context.Background(), "/"+domain); err != nil || len(entries) == 0 {
 				t.Fatalf("ReadDir(%s root) = %+v, %v", domain, entries, err)
 			}

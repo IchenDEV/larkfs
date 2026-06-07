@@ -112,6 +112,15 @@ func TestConfigErrorsAndNamingBlackbox(t *testing.T) {
 	if defaults := cfg.EnabledDomains(); len(defaults) == 0 || defaults[len(defaults)-1] != "_system" {
 		t.Fatalf("EnabledDomains defaults = %#v", defaults)
 	}
+	defaultDomainSet := map[string]bool{}
+	for _, domain := range cfg.EnabledDomains() {
+		defaultDomainSet[domain] = true
+	}
+	for _, want := range []string{"attendance", "event", "markdown", "okr", "slides", "whiteboard"} {
+		if !defaultDomainSet[want] {
+			t.Fatalf("EnabledDomains defaults missing %q: %#v", want, cfg.EnabledDomains())
+		}
+	}
 	cfg.Domains = "drive,wiki"
 	if got := cfg.EnabledDomains(); len(got) != 2 || got[0] != "drive" || got[1] != "wiki" {
 		t.Fatalf("EnabledDomains custom = %#v", got)

@@ -3,6 +3,7 @@ package doctype
 import (
 	"context"
 	"encoding/json"
+	"html"
 
 	"github.com/IchenDEV/larkfs/pkg/cli"
 )
@@ -23,27 +24,49 @@ func (h *DocxHandler) List(_ context.Context, _ string) (ListResult, error) {
 }
 
 func (h *DocxHandler) Read(ctx context.Context, token string) ([]byte, error) {
-	out, err := h.exec.Run(ctx, "docs", "+fetch", "--doc", token, "--format", "json")
+	out, err := h.exec.Run(ctx,
+		"docs", "+fetch",
+		"--api-version", "v2",
+		"--doc", token,
+		"--doc-format", "markdown",
+		"--format", "json")
 	if err != nil {
 		return nil, err
 	}
+	return docxMarkdown(out)
+}
+
+func docxMarkdown(out []byte) ([]byte, error) {
 	var result struct {
 		Data struct {
 			Markdown string `json:"markdown"`
+			Content  string `json:"content"`
+			Text     string `json:"text"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return nil, err
 	}
-	return []byte(result.Data.Markdown), nil
+	switch {
+	case result.Data.Markdown != "":
+		return []byte(result.Data.Markdown), nil
+	case result.Data.Content != "":
+		return []byte(result.Data.Content), nil
+	case result.Data.Text != "":
+		return []byte(result.Data.Text), nil
+	default:
+		return nil, nil
+	}
 }
 
 func (h *DocxHandler) Write(ctx context.Context, token string, data []byte) error {
 	_, err := h.exec.Run(ctx,
 		"docs", "+update",
+		"--api-version", "v2",
 		"--doc", token,
-		"--mode", "overwrite",
-		"--markdown", string(data),
+		"--command", "overwrite",
+		"--doc-format", "markdown",
+		"--content", string(data),
 	)
 	return err
 }
@@ -51,26 +74,41 @@ func (h *DocxHandler) Write(ctx context.Context, token string, data []byte) erro
 func (h *DocxHandler) Create(ctx context.Context, parentToken string, name string, data []byte) (string, error) {
 	out, err := h.exec.Run(ctx,
 		"docs", "+create",
-		"--title", name,
-		"--folder-token", parentToken,
-		"--markdown", string(data),
+		"--api-version", "v2",
+		"--parent-token", parentToken,
+		"--doc-format", "markdown",
+		"--content", docxCreateContent(name, data),
 	)
 	if err != nil {
 		return "", err
 	}
 	var result struct {
 		Data struct {
-			Token string `json:"doc_id"`
+			DocumentID string `json:"document_id"`
+			DocID      string `json:"doc_id"`
+			Token      string `json:"token"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(out, &result); err != nil {
 		return "", err
 	}
+	if result.Data.DocumentID != "" {
+		return result.Data.DocumentID, nil
+	}
+	if result.Data.DocID != "" {
+		return result.Data.DocID, nil
+	}
 	return result.Data.Token, nil
 }
 
+func docxCreateContent(name string, data []byte) string {
+	title := html.EscapeString(name)
+	if len(data) == 0 {
+		return "<title>" + title + "</title>\n"
+	}
+	return "<title>" + title + "</title>\n" + string(data)
+}
+
 func (h *DocxHandler) Delete(ctx context.Context, token string) error {
-	params := cli.JSONParam(map[string]any{"file_token": token, "type": "docx"})
-	_, err := h.exec.Run(ctx, "drive", "files", "delete", "--params", params)
-	return err
+	return deleteDriveResource(ctx, h.exec, token, TypeDocx)
 }

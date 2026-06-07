@@ -18,18 +18,41 @@ func TestDocTypeHandlersBlackbox(t *testing.T) {
 		joined := strings.Join(args, " ")
 		switch {
 		case strings.HasPrefix(joined, "docs +fetch"):
+			if !strings.Contains(joined, "--api-version v2") || !strings.Contains(joined, "--doc-format markdown") {
+				t.Fatalf("docs fetch args = %q", joined)
+			}
 			return []byte(`{"data":{"markdown":"# Hello"}}`), nil
 		case strings.HasPrefix(joined, "docs +update"):
+			for _, want := range []string{"--api-version v2", "--command overwrite", "--doc-format markdown", "--content body"} {
+				if !strings.Contains(joined, want) {
+					t.Fatalf("docs update args = %q, want %q", joined, want)
+				}
+			}
 			return []byte(`{"ok":true}`), nil
 		case strings.HasPrefix(joined, "docs +create"):
-			return []byte(`{"data":{"doc_id":"doc_created"}}`), nil
-		case strings.HasPrefix(joined, "sheets +info"):
-			return []byte(`{"data":{"sheets":{"sheets":[{"sheet_id":"s1","title":"Sheet One"}]}}}`), nil
-		case strings.HasPrefix(joined, "sheets +read"):
-			return []byte(`{"data":{"valueRange":{"values":[["A","B"],[1,true]]}}}`), nil
-		case strings.HasPrefix(joined, "sheets +write"):
+			for _, want := range []string{"--api-version v2", "--parent-token folder", "--doc-format markdown", "--content <title>Title</title>\nbody"} {
+				if !strings.Contains(joined, want) {
+					t.Fatalf("docs create args = %q, want %q", joined, want)
+				}
+			}
+			return []byte(`{"data":{"document_id":"doc_created"}}`), nil
+		case strings.HasPrefix(joined, "sheets +workbook-info"):
+			return []byte(`{"data":{"sheets":[{"sheet_id":"s1","title":"Sheet One"}]}}`), nil
+		case strings.HasPrefix(joined, "sheets +csv-get"):
+			for _, want := range []string{"--spreadsheet-token shtcn", "--sheet-id s1", "--range A1:ZZ100000"} {
+				if !strings.Contains(joined, want) {
+					t.Fatalf("sheets csv-get args = %q, want %q", joined, want)
+				}
+			}
+			return []byte(`{"data":{"csv":"A,B\n1,true\n"}}`), nil
+		case strings.HasPrefix(joined, "sheets +csv-put"):
+			for _, want := range []string{"--spreadsheet-token shtcn", "--sheet-id s1", "--start-cell A1", "--csv A,B\n1,2\n"} {
+				if !strings.Contains(joined, want) {
+					t.Fatalf("sheets csv-put args = %q, want %q", joined, want)
+				}
+			}
 			return []byte(`{"ok":true}`), nil
-		case strings.HasPrefix(joined, "sheets +create"):
+		case strings.HasPrefix(joined, "sheets +workbook-create"):
 			return []byte(`{"data":{"spreadsheet_token":"shtcn_created"}}`), nil
 		case strings.HasPrefix(joined, "base +table-list"):
 			return []byte(`{"data":{"items":[{"table_id":"tbl1","table_name":"Tasks"}]}}`), nil
@@ -39,7 +62,10 @@ func TestDocTypeHandlersBlackbox(t *testing.T) {
 			return []byte(`{"ok":true}`), nil
 		case strings.HasPrefix(joined, "drive metas batch_query"):
 			return []byte(`{"data":{"metas":[{"title":"Deck"}]}}`), nil
-		case strings.HasPrefix(joined, "drive files delete"):
+		case strings.HasPrefix(joined, "drive +delete"):
+			if !strings.Contains(joined, "--yes") {
+				t.Fatalf("drive delete args = %q", joined)
+			}
 			return []byte(`{"code":0}`), nil
 		default:
 			t.Fatalf("unexpected args: %v", args)
@@ -169,8 +195,10 @@ func TestFileAndFolderHandlersBlackbox(t *testing.T) {
 			return []byte(`{"data":{"file_token":"file_token"}}`), nil
 		case strings.HasPrefix(joined, "drive files list"):
 			return []byte(`{"data":{"files":[{"token":"doc","name":"Doc","type":"docx","modified_time":1760000000,"created_time":1750000000}],"has_more":true,"next_page_token":"n"}}`), nil
-		case strings.HasPrefix(joined, "drive files delete"):
+		case strings.HasPrefix(joined, "drive +delete"):
 			return []byte(`{"code":0}`), nil
+		case strings.HasPrefix(joined, "drive +create-folder"):
+			return []byte(`{"data":{"token":"folder_created"}}`), nil
 		default:
 			t.Fatalf("unexpected args: %v", args)
 			return nil, nil

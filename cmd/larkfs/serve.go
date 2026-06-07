@@ -35,7 +35,7 @@ func newServeCmd() *cobra.Command {
 	f.StringVar(&cfg.CacheSize, "cache-size", config.DefaultCacheSize, "Cache size limit")
 	f.StringVar(&cfg.LogLevel, "log-level", "info", "Log level")
 	f.BoolVar(&cfg.ReadOnly, "read-only", false, "Serve in read-only mode")
-	f.StringVar(&cfg.Domains, "domains", "drive,wiki,im,calendar,tasks,mail,meetings,approval,base,contact,docs,minutes,sheets,vc,_system", "Enabled domains")
+	f.StringVar(&cfg.Domains, "domains", config.DefaultDomainsValue, "Enabled domains")
 	f.StringVar(&cfg.LarkCLIPath, "lark-cli", "", "Path to lark-cli binary")
 
 	return cmd
