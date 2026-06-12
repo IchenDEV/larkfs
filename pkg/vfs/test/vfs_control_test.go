@@ -13,7 +13,7 @@ import (
 func TestVFSControlActionsAcrossDomainsBlackbox(t *testing.T) {
 	domains := []string{
 		"approval", "attendance", "base", "calendar", "contact", "docs", "drive",
-		"event", "im", "mail", "markdown", "meetings", "minutes", "okr", "sheets",
+		"event", "im", "mail", "markdown", "meetings", "minutes", "note", "okr", "sheets",
 		"slides", "tasks", "vc", "whiteboard", "wiki", "_system",
 	}
 	runner := &testutil.Runner{Out: []byte(`{"ok":true}`)}
@@ -29,7 +29,7 @@ func TestVFSControlActionsAcrossDomainsBlackbox(t *testing.T) {
 		}
 		if domain == "approval" || domain == "attendance" || domain == "base" || domain == "contact" || domain == "docs" ||
 			domain == "event" || domain == "markdown" || domain == "minutes" || domain == "okr" || domain == "sheets" ||
-			domain == "slides" || domain == "vc" || domain == "whiteboard" || domain == "_system" {
+			domain == "note" || domain == "slides" || domain == "vc" || domain == "whiteboard" || domain == "_system" {
 			if entries, err := ops.ReadDir(context.Background(), "/"+domain); err != nil || len(entries) == 0 {
 				t.Fatalf("ReadDir(%s root) = %+v, %v", domain, entries, err)
 			}
