@@ -161,7 +161,7 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	runner := &testutil.Runner{Out: []byte(`{"data":[{"name":"Alice"}]}`)}
 	ops := vfs.NewOperations(vfs.OperationsConfig{
 		CLI:  runner,
-		Tree: vfs.NewTree([]string{"contact", "docs", "meetings", "base", "sheets", "vc", "event", "markdown", "okr", "slides", "whiteboard", "_system"}),
+		Tree: vfs.NewTree([]string{"contact", "docs", "meetings", "base", "sheets", "vc", "event", "markdown", "note", "okr", "slides", "whiteboard", "_system"}),
 		TTL:  time.Minute,
 	})
 
@@ -199,7 +199,7 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	if err != nil || len(view) != 1 {
 		t.Fatalf("ListView() = %+v, %v", view, err)
 	}
-	for _, root := range []string{"/base", "/sheets", "/vc", "/meetings", "/event", "/markdown", "/okr", "/slides", "/whiteboard"} {
+	for _, root := range []string{"/base", "/sheets", "/vc", "/meetings", "/event", "/markdown", "/note", "/okr", "/slides", "/whiteboard"} {
 		children, err := ops.ReadDir(context.Background(), root)
 		if err != nil || len(children) == 0 {
 			t.Fatalf("ReadDir(%s) = %+v, %v", root, children, err)
@@ -214,6 +214,54 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	}
 	if _, err := ops.ExecuteOp(context.Background(), "/event/_ops/consume.request.json", []byte(`{"args":["event","consume","im.message.receive_v1","--max-events","1"]}`)); err != nil {
 		t.Fatalf("ExecuteOp(event consume) error: %v", err)
+	}
+	if _, err := ops.RunQuery(context.Background(), "/note/_queries/detail.request.json", []byte(`{"flags":{"note-id":"note_1"}}`)); err != nil {
+		t.Fatalf("RunQuery(note detail) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "note +detail --note-id note_1" {
+		t.Fatalf("note detail args = %q", got)
+	}
+	if _, err := ops.RunQuery(context.Background(), "/_system/_queries/skills-read.request.json", []byte(`{"query":"lark-doc"}`)); err != nil {
+		t.Fatalf("RunQuery(skills read) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "skills read --json lark-doc" {
+		t.Fatalf("skills read args = %q", got)
+	}
+	if _, err := ops.RunQuery(context.Background(), "/_system/_queries/event-schema.request.json", []byte(`{"query":"im.message.receive_v1"}`)); err != nil {
+		t.Fatalf("RunQuery(event schema) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "event schema im.message.receive_v1" {
+		t.Fatalf("event schema args = %q", got)
+	}
+	if _, err := ops.RunQuery(context.Background(), "/base/_queries/dashboard-block-list.request.json", []byte(`{"flags":{"app-token":"app_1"}}`)); err != nil {
+		t.Fatalf("RunQuery(base dashboard-block-list) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "base +dashboard-block-list --app-token app_1" {
+		t.Fatalf("base dashboard-block-list args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/base/_ops/view-set-filter.request.json", []byte(`{"flags":{"view-id":"view_1"}}`)); err != nil {
+		t.Fatalf("ExecuteOp(base view-set-filter) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "base +view-set-filter --view-id view_1" {
+		t.Fatalf("base view-set-filter args = %q", got)
+	}
+	if _, err := ops.RunQuery(context.Background(), "/sheets/_queries/cond-format-list.request.json", []byte(`{"flags":{"spreadsheet-token":"sht_1"}}`)); err != nil {
+		t.Fatalf("RunQuery(sheets cond-format-list) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "sheets +cond-format-list --spreadsheet-token sht_1" {
+		t.Fatalf("sheets cond-format-list args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/sheets/_ops/chart-create.request.json", []byte(`{"flags":{"spreadsheet-token":"sht_1"}}`)); err != nil {
+		t.Fatalf("ExecuteOp(sheets chart-create) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "sheets +chart-create --spreadsheet-token sht_1" {
+		t.Fatalf("sheets chart-create args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/_system/_ops/skills-read.request.json", []byte(`{"query":"lark-doc"}`)); err != nil {
+		t.Fatalf("ExecuteOp(system skills-read) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "skills read --json lark-doc" {
+		t.Fatalf("system skills-read args = %q", got)
 	}
 }
 

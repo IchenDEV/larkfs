@@ -26,6 +26,7 @@ var defaultDomains = []string{
 	"event",
 	"markdown",
 	"minutes",
+	"note",
 	"okr",
 	"sheets",
 	"slides",

@@ -116,7 +116,7 @@ func TestConfigErrorsAndNamingBlackbox(t *testing.T) {
 	for _, domain := range cfg.EnabledDomains() {
 		defaultDomainSet[domain] = true
 	}
-	for _, want := range []string{"attendance", "event", "markdown", "okr", "slides", "whiteboard"} {
+	for _, want := range []string{"attendance", "event", "markdown", "note", "okr", "slides", "whiteboard"} {
 		if !defaultDomainSet[want] {
 			t.Fatalf("EnabledDomains defaults missing %q: %#v", want, cfg.EnabledDomains())
 		}

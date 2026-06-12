@@ -11,6 +11,7 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 		"base": baseActionSpecs(),
 		"calendar": {
 			"create": {args: []string{"calendar", "+create"}},
+			"update": {args: []string{"calendar", "+update"}},
 			"rsvp":   {args: []string{"calendar", "+rsvp"}},
 		},
 		"contact": {
@@ -37,6 +38,10 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 			"messages-send":               {args: []string{"im", "+messages-send"}},
 			"messages-reply":              {args: []string{"im", "+messages-reply"}},
 			"messages-resources-download": {args: []string{"im", "+messages-resources-download"}},
+			"feed-shortcut-create":        {args: []string{"im", "+feed-shortcut-create"}},
+			"feed-shortcut-remove":        {args: []string{"im", "+feed-shortcut-remove"}},
+			"flag-create":                 {args: []string{"im", "+flag-create"}},
+			"flag-cancel":                 {args: []string{"im", "+flag-cancel"}},
 			"reactions":                   {args: []string{"im", "reactions"}},
 			"pins":                        {args: []string{"im", "pins"}},
 		},
@@ -64,8 +69,11 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 		"minutes": {
 			"download":        {args: []string{"minutes", "+download"}},
 			"speaker-replace": {args: []string{"minutes", "+speaker-replace"}},
+			"summary":         {args: []string{"minutes", "+summary"}},
+			"todo":            {args: []string{"minutes", "+todo"}},
 			"update":          {args: []string{"minutes", "+update"}},
 			"upload":          {args: []string{"minutes", "+upload"}},
+			"word-replace":    {args: []string{"minutes", "+word-replace"}},
 		},
 		"okr": {
 			"progress-create": {args: []string{"okr", "+progress-create"}},
@@ -78,7 +86,7 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 		"tasks":      taskActionSpecs(),
 		"vc":         vcActionSpecs(),
 		"whiteboard": {"update": {args: []string{"whiteboard", "+update"}}},
-		"wiki":       {"node-create": {args: []string{"wiki", "+node-create"}}},
+		"wiki":       wikiActionSpecs(),
 	}
 }
 
@@ -106,105 +114,6 @@ func driveActionSpecs() map[string]actionSpec {
 	}
 }
 
-func baseActionSpecs() map[string]actionSpec {
-	return map[string]actionSpec{
-		"advperm-enable":           {args: []string{"base", "+advperm-enable"}},
-		"advperm-disable":          {args: []string{"base", "+advperm-disable"}},
-		"base-create":              {args: []string{"base", "+base-create"}},
-		"base-copy":                {args: []string{"base", "+base-copy"}},
-		"base-block-create":        {args: []string{"base", "+base-block-create"}},
-		"base-block-delete":        {args: []string{"base", "+base-block-delete"}},
-		"base-block-move":          {args: []string{"base", "+base-block-move"}},
-		"base-block-rename":        {args: []string{"base", "+base-block-rename"}},
-		"table-create":             {args: []string{"base", "+table-create"}},
-		"table-update":             {args: []string{"base", "+table-update"}},
-		"table-delete":             {args: []string{"base", "+table-delete"}},
-		"record-upsert":            {args: []string{"base", "+record-upsert"}},
-		"record-delete":            {args: []string{"base", "+record-delete"}},
-		"record-batch-create":      {args: []string{"base", "+record-batch-create"}},
-		"record-batch-update":      {args: []string{"base", "+record-batch-update"}},
-		"record-upload-attachment": {args: []string{"base", "+record-upload-attachment"}},
-		"record-remove-attachment": {args: []string{"base", "+record-remove-attachment"}},
-		"field-create":             {args: []string{"base", "+field-create"}},
-		"field-update":             {args: []string{"base", "+field-update"}},
-		"field-delete":             {args: []string{"base", "+field-delete"}},
-		"view-create":              {args: []string{"base", "+view-create"}},
-		"view-delete":              {args: []string{"base", "+view-delete"}},
-		"dashboard-create":         {args: []string{"base", "+dashboard-create"}},
-		"dashboard-update":         {args: []string{"base", "+dashboard-update"}},
-		"dashboard-delete":         {args: []string{"base", "+dashboard-delete"}},
-		"dashboard-arrange":        {args: []string{"base", "+dashboard-arrange"}},
-		"workflow-create":          {args: []string{"base", "+workflow-create"}},
-		"workflow-update":          {args: []string{"base", "+workflow-update"}},
-		"workflow-enable":          {args: []string{"base", "+workflow-enable"}},
-		"workflow-disable":         {args: []string{"base", "+workflow-disable"}},
-		"form-create":              {args: []string{"base", "+form-create"}},
-		"form-update":              {args: []string{"base", "+form-update"}},
-		"form-delete":              {args: []string{"base", "+form-delete"}},
-		"form-submit":              {args: []string{"base", "+form-submit"}},
-		"role-create":              {args: []string{"base", "+role-create"}},
-		"role-update":              {args: []string{"base", "+role-update"}},
-		"role-delete":              {args: []string{"base", "+role-delete"}},
-	}
-}
-
-func sheetsActionSpecs() map[string]actionSpec {
-	return map[string]actionSpec{
-		"workbook-create":       {args: []string{"sheets", "+workbook-create"}},
-		"workbook-export":       {args: []string{"sheets", "+workbook-export"}},
-		"csv-put":               {args: []string{"sheets", "+csv-put"}},
-		"cells-set":             {args: []string{"sheets", "+cells-set"}},
-		"cells-batch-clear":     {args: []string{"sheets", "+cells-batch-clear"}},
-		"cells-batch-set-style": {args: []string{"sheets", "+cells-batch-set-style"}},
-		"cells-clear":           {args: []string{"sheets", "+cells-clear"}},
-		"cells-merge":           {args: []string{"sheets", "+cells-merge"}},
-		"cells-replace":         {args: []string{"sheets", "+cells-replace"}},
-		"cells-set-image":       {args: []string{"sheets", "+cells-set-image"}},
-		"cells-set-style":       {args: []string{"sheets", "+cells-set-style"}},
-		"cells-unmerge":         {args: []string{"sheets", "+cells-unmerge"}},
-		"cols-resize":           {args: []string{"sheets", "+cols-resize"}},
-		"rows-resize":           {args: []string{"sheets", "+rows-resize"}},
-		"dim-delete":            {args: []string{"sheets", "+dim-delete"}},
-		"dim-freeze":            {args: []string{"sheets", "+dim-freeze"}},
-		"dim-group":             {args: []string{"sheets", "+dim-group"}},
-		"dim-hide":              {args: []string{"sheets", "+dim-hide"}},
-		"dim-insert":            {args: []string{"sheets", "+dim-insert"}},
-		"dim-move":              {args: []string{"sheets", "+dim-move"}},
-		"dim-ungroup":           {args: []string{"sheets", "+dim-ungroup"}},
-		"dim-unhide":            {args: []string{"sheets", "+dim-unhide"}},
-		"dropdown-delete":       {args: []string{"sheets", "+dropdown-delete"}},
-		"dropdown-set":          {args: []string{"sheets", "+dropdown-set"}},
-		"dropdown-update":       {args: []string{"sheets", "+dropdown-update"}},
-		"filter-create":         {args: []string{"sheets", "+filter-create"}},
-		"filter-delete":         {args: []string{"sheets", "+filter-delete"}},
-		"filter-update":         {args: []string{"sheets", "+filter-update"}},
-		"filter-view-create":    {args: []string{"sheets", "+filter-view-create"}},
-		"filter-view-delete":    {args: []string{"sheets", "+filter-view-delete"}},
-		"filter-view-update":    {args: []string{"sheets", "+filter-view-update"}},
-		"float-image-create":    {args: []string{"sheets", "+float-image-create"}},
-		"float-image-delete":    {args: []string{"sheets", "+float-image-delete"}},
-		"float-image-update":    {args: []string{"sheets", "+float-image-update"}},
-		"pivot-create":          {args: []string{"sheets", "+pivot-create"}},
-		"pivot-delete":          {args: []string{"sheets", "+pivot-delete"}},
-		"pivot-update":          {args: []string{"sheets", "+pivot-update"}},
-		"range-copy":            {args: []string{"sheets", "+range-copy"}},
-		"range-fill":            {args: []string{"sheets", "+range-fill"}},
-		"range-move":            {args: []string{"sheets", "+range-move"}},
-		"range-sort":            {args: []string{"sheets", "+range-sort"}},
-		"sheet-copy":            {args: []string{"sheets", "+sheet-copy"}},
-		"sheet-create":          {args: []string{"sheets", "+sheet-create"}},
-		"sheet-delete":          {args: []string{"sheets", "+sheet-delete"}},
-		"sheet-hide":            {args: []string{"sheets", "+sheet-hide"}},
-		"sheet-move":            {args: []string{"sheets", "+sheet-move"}},
-		"sheet-rename":          {args: []string{"sheets", "+sheet-rename"}},
-		"sheet-set-tab-color":   {args: []string{"sheets", "+sheet-set-tab-color"}},
-		"sheet-unhide":          {args: []string{"sheets", "+sheet-unhide"}},
-		"sparkline-create":      {args: []string{"sheets", "+sparkline-create"}},
-		"sparkline-delete":      {args: []string{"sheets", "+sparkline-delete"}},
-		"sparkline-update":      {args: []string{"sheets", "+sparkline-update"}},
-	}
-}
-
 func slidesActionSpecs() map[string]actionSpec {
 	return map[string]actionSpec{
 		"create":        {args: []string{"slides", "+create"}},
@@ -223,8 +132,12 @@ func taskActionSpecs() map[string]actionSpec {
 		"reopen":            {args: []string{"task", "+reopen"}},
 		"followers":         {args: []string{"task", "+followers"}},
 		"reminder":          {args: []string{"task", "+reminder"}},
+		"set-ancestor":      {args: []string{"task", "+set-ancestor"}},
+		"subscribe-event":   {args: []string{"task", "+subscribe-event"}},
 		"tasklist-create":   {args: []string{"task", "+tasklist-create"}},
+		"tasklist-members":  {args: []string{"task", "+tasklist-members"}},
 		"tasklist-task-add": {args: []string{"task", "+tasklist-task-add"}},
+		"upload-attachment": {args: []string{"task", "+upload-attachment"}},
 		"subtask":           {args: []string{"task", "subtasks"}},
 	}
 }
@@ -235,5 +148,18 @@ func vcActionSpecs() map[string]actionSpec {
 		"meeting-leave": {args: []string{"vc", "+meeting-leave"}},
 		"notes":         {args: []string{"vc", "+notes"}},
 		"recording":     {args: []string{"vc", "+recording"}},
+	}
+}
+
+func wikiActionSpecs() map[string]actionSpec {
+	return map[string]actionSpec{
+		"space-create":  {args: []string{"wiki", "+space-create"}},
+		"delete-space":  {args: []string{"wiki", "+delete-space"}},
+		"member-add":    {args: []string{"wiki", "+member-add"}},
+		"member-remove": {args: []string{"wiki", "+member-remove"}},
+		"move":          {args: []string{"wiki", "+move"}},
+		"node-copy":     {args: []string{"wiki", "+node-copy"}},
+		"node-create":   {args: []string{"wiki", "+node-create"}},
+		"node-delete":   {args: []string{"wiki", "+node-delete"}},
 	}
 }

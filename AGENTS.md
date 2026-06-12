@@ -70,6 +70,7 @@ Always unmarshal into `struct { Data struct { ... } \`json:"data"\` }`. Never ex
 **Skill commands (`+`) vs raw commands:**
 - Skill commands have command-specific flags; current shortcuts generally accept `--format json`, but check help before adding flags to a new call.
 - Raw API commands (`drive files list`, `im chats list`) support `--format json`, `--page-all`, etc.
+- For Docs flows on `lark-cli` 1.0.53+, run `lark-cli skills read lark-doc` before choosing Docs flags. LarkFS exposes `skills list/read` through `_system` control queries.
 - When in doubt, run `lark-cli <cmd> --help` to check available flags.
 
 ## Testing

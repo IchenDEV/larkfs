@@ -93,10 +93,7 @@ func (o *Operations) executeQuery(ctx context.Context, node *VNode, data []byte)
 		return nil, fmt.Errorf("unsupported query: %s/%s", node.Domain, node.Action)
 	}
 	args := append([]string(nil), spec.args...)
-	if spec.queryArg != "" && req.Query != "" {
-		args = append(args, spec.queryArg, req.Query)
-		req.Query = ""
-	}
+	args = appendSpecQueryArgs(args, spec, &req)
 	if spec.pageAll {
 		args = append(args, "--format", "json", "--page-all", "--page-limit", "0")
 	}
@@ -132,6 +129,7 @@ func (o *Operations) executeAction(ctx context.Context, node *VNode, data []byte
 		return nil, fmt.Errorf("unsupported action: %s/%s", node.Domain, node.Action)
 	}
 	args := append([]string(nil), spec.args...)
+	args = appendSpecQueryArgs(args, spec, &req)
 	args = appendRequestArgs(args, req)
 
 	out, err := o.cli.Run(ctx, args...)
@@ -143,6 +141,18 @@ func (o *Operations) executeAction(ctx context.Context, node *VNode, data []byte
 		return json.MarshalIndent(pretty, "", "  ")
 	}
 	return out, nil
+}
+
+func appendSpecQueryArgs(args []string, spec actionSpec, req *execRequest) []string {
+	if spec.queryArg != "" && req.Query != "" {
+		args = append(args, spec.queryArg, req.Query)
+		req.Query = ""
+	}
+	if spec.queryPos && req.Query != "" {
+		args = append(args, req.Query)
+		req.Query = ""
+	}
+	return args
 }
 
 func appendRequestArgs(args []string, req execRequest) []string {
