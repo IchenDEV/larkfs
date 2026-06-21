@@ -2,6 +2,7 @@ package vfs
 
 func domainActionSpecs() map[string]map[string]actionSpec {
 	return map[string]map[string]actionSpec{
+		"apps": appsActionSpecs(),
 		"approval": {
 			"approve":  {args: []string{"approval", "tasks", "approve"}},
 			"reject":   {args: []string{"approval", "tasks", "reject"}},
@@ -18,15 +19,7 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 			"search-user": {args: []string{"contact", "+search-user"}},
 			"get-user":    {args: []string{"contact", "+get-user"}},
 		},
-		"docs": {
-			"create":            {args: []string{"docs", "+create", "--api-version", "v2"}},
-			"update":            {args: []string{"docs", "+update", "--api-version", "v2"}},
-			"media-download":    {args: []string{"docs", "+media-download"}},
-			"media-insert":      {args: []string{"docs", "+media-insert"}},
-			"media-preview":     {args: []string{"docs", "+media-preview"}},
-			"media-upload":      {args: []string{"docs", "+media-upload"}},
-			"whiteboard-update": {args: []string{"docs", "+whiteboard-update"}},
-		},
+		"docs":  docsActionSpecs(),
 		"drive": driveActionSpecs(),
 		"event": {
 			"consume": {args: []string{"event", "consume"}},
@@ -75,18 +68,32 @@ func domainActionSpecs() map[string]map[string]actionSpec {
 			"upload":          {args: []string{"minutes", "+upload"}},
 			"word-replace":    {args: []string{"minutes", "+word-replace"}},
 		},
-		"okr": {
-			"progress-create": {args: []string{"okr", "+progress-create"}},
-			"progress-update": {args: []string{"okr", "+progress-update"}},
-			"progress-delete": {args: []string{"okr", "+progress-delete"}},
-			"upload-image":    {args: []string{"okr", "+upload-image"}},
-		},
+		"okr":        okrActionSpecs(),
 		"sheets":     sheetsActionSpecs(),
 		"slides":     slidesActionSpecs(),
 		"tasks":      taskActionSpecs(),
 		"vc":         vcActionSpecs(),
 		"whiteboard": {"update": {args: []string{"whiteboard", "+update"}}},
 		"wiki":       wikiActionSpecs(),
+	}
+}
+
+func appsActionSpecs() map[string]actionSpec {
+	return plusActionSpecs("apps", appsOpActionNames())
+}
+
+func docsActionSpecs() map[string]actionSpec {
+	return map[string]actionSpec{
+		"create":            {args: []string{"docs", "+create", "--api-version", "v2"}},
+		"update":            {args: []string{"docs", "+update", "--api-version", "v2"}},
+		"media-download":    {args: []string{"docs", "+media-download"}},
+		"media-insert":      {args: []string{"docs", "+media-insert"}},
+		"media-preview":     {args: []string{"docs", "+media-preview"}},
+		"media-upload":      {args: []string{"docs", "+media-upload"}},
+		"resource-delete":   {args: []string{"docs", "resource-delete"}},
+		"resource-download": {args: []string{"docs", "resource-download"}},
+		"resource-update":   {args: []string{"docs", "resource-update"}},
+		"whiteboard-update": {args: []string{"docs", "+whiteboard-update"}},
 	}
 }
 
@@ -112,6 +119,19 @@ func driveActionSpecs() map[string]actionSpec {
 		"version-get":         {args: []string{"drive", "+version-get"}},
 		"version-revert":      {args: []string{"drive", "+version-revert"}},
 	}
+}
+
+func okrActionSpecs() map[string]actionSpec {
+	return plusActionSpecs("okr", []string{
+		"batch-create",
+		"indicator-update",
+		"progress-create",
+		"progress-update",
+		"progress-delete",
+		"reorder",
+		"upload-image",
+		"weight",
+	})
 }
 
 func slidesActionSpecs() map[string]actionSpec {

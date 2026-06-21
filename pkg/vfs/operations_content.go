@@ -59,7 +59,7 @@ func (o *Operations) fetchEntries(ctx context.Context, node *VNode) (doctype.Lis
 			return o.meeting.ListMeetings(ctx, node.Token)
 		}
 		return o.meeting.ListMeetingContents(node.Token), nil
-	case "approval", "attendance", "base", "contact", "docs", "event", "markdown", "minutes", "note", "okr", "sheets", "slides", "vc", "whiteboard", "_system":
+	case "apps", "approval", "attendance", "base", "contact", "docs", "event", "markdown", "minutes", "note", "okr", "sheets", "slides", "vc", "whiteboard", "_system":
 		return staticDomainEntries(domain, node.Token), nil
 	}
 
@@ -155,19 +155,20 @@ func staticDomainEntries(domain, token string) doctype.ListResult {
 	}
 
 	names := map[string][]string{
+		"apps":       {"apps", "html", "local-dev", "database", "releases", "access-scope", "sessions"},
 		"approval":   {"instances", "tasks"},
 		"attendance": {"user-tasks"},
 		"base":       {"bases", "blocks", "tables", "records", "fields", "views", "dashboards", "dashboard-blocks", "forms", "form-questions", "roles", "workflows", "advanced-permissions"},
 		"contact":    {"users", "search"},
-		"docs":       {"search", "by-token", "media", "whiteboard"},
+		"docs":       {"search", "by-token", "media", "resources", "whiteboard"},
 		"event":      {"list", "schema", "status", "consume"},
 		"markdown":   {"create", "fetch", "diff", "overwrite", "patch"},
 		"minutes":    {"minutes", "media", "search", "speakers"},
 		"note":       {"detail", "transcript"},
-		"okr":        {"cycles", "objectives", "key-results", "progress", "images"},
+		"okr":        {"cycles", "objectives", "key-results", "progress", "indicators", "ordering", "weights", "images"},
 		"sheets":     {"workbooks", "cells", "sheets", "dimensions", "filters", "filter-views", "conditional-formats", "dropdowns", "charts", "images", "pivots", "sparklines"},
 		"slides":     {"presentations", "slides", "media"},
-		"vc":         {"meetings", "events", "notes", "recordings"},
+		"vc":         {"meetings", "active-meetings", "events", "notes", "recordings"},
 		"whiteboard": {"query", "update"},
 		"_system":    {"api", "schema", "auth", "config", "profile", "doctor", "event", "skills", "update"},
 	}
