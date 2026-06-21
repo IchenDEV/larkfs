@@ -2,6 +2,7 @@ package vfs
 
 func querySpec(domain, action string) (actionSpec, bool) {
 	specs := map[string]map[string]actionSpec{
+		"apps":       appsQuerySpecs(),
 		"approval":   approvalQuerySpecs(),
 		"attendance": {"user-tasks": {args: []string{"attendance", "user_tasks", "query"}, pageAll: true}},
 		"base":       baseQuerySpecs(),
@@ -56,6 +57,10 @@ func approvalQuerySpecs() map[string]actionSpec {
 		"instances": {args: []string{"approval", "instances", "list"}, pageAll: true},
 		"tasks":     {args: []string{"approval", "tasks", "list"}, pageAll: true},
 	}
+}
+
+func appsQuerySpecs() map[string]actionSpec {
+	return plusActionSpecs("apps", appsQueryActionNames())
 }
 
 func driveQuerySpecs() map[string]actionSpec {
@@ -123,10 +128,11 @@ func mailQuerySpecs() map[string]actionSpec {
 
 func vcQuerySpecs() map[string]actionSpec {
 	return map[string]actionSpec{
-		"search":         {args: []string{"vc", "+search"}},
-		"notes":          {args: []string{"vc", "+notes"}},
-		"recording":      {args: []string{"vc", "+recording"}},
-		"meeting-events": {args: []string{"vc", "+meeting-events"}},
+		"search":              {args: []string{"vc", "+search"}},
+		"notes":               {args: []string{"vc", "+notes"}},
+		"recording":           {args: []string{"vc", "+recording"}},
+		"meeting-events":      {args: []string{"vc", "+meeting-events"}},
+		"meeting-list-active": {args: []string{"vc", "+meeting-list-active"}},
 	}
 }
 

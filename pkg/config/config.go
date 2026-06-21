@@ -18,6 +18,7 @@ var defaultDomains = []string{
 	"tasks",
 	"mail",
 	"meetings",
+	"apps",
 	"approval",
 	"attendance",
 	"base",

@@ -92,6 +92,50 @@ func TestCLIParsersAndExecutor(t *testing.T) {
 	}
 }
 
+func TestExecutorClassifiesTypedErrorEnvelopes(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		body string
+		want error
+	}{
+		{
+			name: "not_found",
+			body: `{"ok":false,"error":{"type":"api","subtype":"not_found","code":404,"message":"missing"}}`,
+			want: cli.ErrNotFound,
+		},
+		{
+			name: "forbidden",
+			body: `{"ok":false,"error":{"type":"api","subtype":"permission_denied","code":403,"message":"forbidden"}}`,
+			want: cli.ErrForbidden,
+		},
+		{
+			name: "rate_limited",
+			body: `{"ok":false,"error":{"type":"api","subtype":"rate_limited","code":429,"message":"too many requests"}}`,
+			want: cli.ErrRateLimited,
+		},
+		{
+			name: "auth_expired",
+			body: `{"ok":false,"error":{"type":"auth","subtype":"unauthenticated","code":401,"message":"token expired"}}`,
+			want: cli.ErrAuthExpired,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			script := filepath.Join(t.TempDir(), "lark-cli-test")
+			if err := os.WriteFile(script, []byte("#!/bin/sh\ncat >&2 <<'EOF'\n"+tc.body+"\nEOF\nexit 1\n"), 0o755); err != nil {
+				t.Fatalf("WriteFile() error: %v", err)
+			}
+			exec, err := cli.NewExecutor(script)
+			if err != nil {
+				t.Fatalf("NewExecutor() error: %v", err)
+			}
+			_, err = exec.Run(context.Background(), "drive", "files", "get")
+			if !stderrors.Is(err, tc.want) {
+				t.Fatalf("Run() error = %v, want %v", err, tc.want)
+			}
+		})
+	}
+}
+
 func TestConfigErrorsAndNamingBlackbox(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
@@ -116,7 +160,7 @@ func TestConfigErrorsAndNamingBlackbox(t *testing.T) {
 	for _, domain := range cfg.EnabledDomains() {
 		defaultDomainSet[domain] = true
 	}
-	for _, want := range []string{"attendance", "event", "markdown", "note", "okr", "slides", "whiteboard"} {
+	for _, want := range []string{"apps", "attendance", "event", "markdown", "note", "okr", "slides", "whiteboard"} {
 		if !defaultDomainSet[want] {
 			t.Fatalf("EnabledDomains defaults missing %q: %#v", want, cfg.EnabledDomains())
 		}

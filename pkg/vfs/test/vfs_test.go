@@ -161,7 +161,7 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	runner := &testutil.Runner{Out: []byte(`{"data":[{"name":"Alice"}]}`)}
 	ops := vfs.NewOperations(vfs.OperationsConfig{
 		CLI:  runner,
-		Tree: vfs.NewTree([]string{"contact", "docs", "meetings", "base", "sheets", "vc", "event", "markdown", "note", "okr", "slides", "whiteboard", "_system"}),
+		Tree: vfs.NewTree([]string{"apps", "contact", "docs", "meetings", "base", "sheets", "vc", "event", "markdown", "note", "okr", "slides", "whiteboard", "_system"}),
 		TTL:  time.Minute,
 	})
 
@@ -199,7 +199,7 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	if err != nil || len(view) != 1 {
 		t.Fatalf("ListView() = %+v, %v", view, err)
 	}
-	for _, root := range []string{"/base", "/sheets", "/vc", "/meetings", "/event", "/markdown", "/note", "/okr", "/slides", "/whiteboard"} {
+	for _, root := range []string{"/apps", "/base", "/sheets", "/vc", "/meetings", "/event", "/markdown", "/note", "/okr", "/slides", "/whiteboard"} {
 		children, err := ops.ReadDir(context.Background(), root)
 		if err != nil || len(children) == 0 {
 			t.Fatalf("ReadDir(%s) = %+v, %v", root, children, err)
@@ -233,6 +233,18 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	if got := testutil.JoinArgs(runner.LastArgs); got != "event schema im.message.receive_v1" {
 		t.Fatalf("event schema args = %q", got)
 	}
+	if _, err := ops.RunQuery(context.Background(), "/apps/_queries/session-messages-list.request.json", []byte(`{"flags":{"turn-id":"turn_1"}}`)); err != nil {
+		t.Fatalf("RunQuery(apps session-messages-list) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "apps +session-messages-list --turn-id turn_1" {
+		t.Fatalf("apps session-messages-list args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/apps/_ops/chat.request.json", []byte(`{"flags":{"session-id":"sess_1"}}`)); err != nil {
+		t.Fatalf("ExecuteOp(apps chat) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "apps +chat --session-id sess_1" {
+		t.Fatalf("apps chat args = %q", got)
+	}
 	if _, err := ops.RunQuery(context.Background(), "/base/_queries/dashboard-block-list.request.json", []byte(`{"flags":{"app-token":"app_1"}}`)); err != nil {
 		t.Fatalf("RunQuery(base dashboard-block-list) error: %v", err)
 	}
@@ -256,6 +268,24 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	}
 	if got := testutil.JoinArgs(runner.LastArgs); got != "sheets +chart-create --spreadsheet-token sht_1" {
 		t.Fatalf("sheets chart-create args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/docs/_ops/resource-update.request.json", []byte(`{"flags":{"doc":"doc_1","type":"cover"}}`)); err != nil {
+		t.Fatalf("ExecuteOp(docs resource-update) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "docs resource-update --doc doc_1 --type cover" {
+		t.Fatalf("docs resource-update args = %q", got)
+	}
+	if _, err := ops.ExecuteOp(context.Background(), "/okr/_ops/batch-create.request.json", []byte(`{"flags":{"cycle-id":"cycle_1"}}`)); err != nil {
+		t.Fatalf("ExecuteOp(okr batch-create) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "okr +batch-create --cycle-id cycle_1" {
+		t.Fatalf("okr batch-create args = %q", got)
+	}
+	if _, err := ops.RunQuery(context.Background(), "/vc/_queries/meeting-list-active.request.json", []byte(`{"flags":{"user-id":"user_1"}}`)); err != nil {
+		t.Fatalf("RunQuery(vc meeting-list-active) error: %v", err)
+	}
+	if got := testutil.JoinArgs(runner.LastArgs); got != "vc +meeting-list-active --user-id user_1" {
+		t.Fatalf("vc meeting-list-active args = %q", got)
 	}
 	if _, err := ops.ExecuteOp(context.Background(), "/_system/_ops/skills-read.request.json", []byte(`{"query":"lark-doc"}`)); err != nil {
 		t.Fatalf("ExecuteOp(system skills-read) error: %v", err)

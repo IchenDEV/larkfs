@@ -26,8 +26,40 @@ func plusActionSpecs(domain string, actions []string) map[string]actionSpec {
 	return specs
 }
 
+func appsQueryActionNames() []string {
+	return []string{
+		"list",
+		"db-table-list",
+		"db-table-get",
+		"release-get",
+		"release-list",
+		"access-scope-get",
+		"session-get",
+		"session-messages-list",
+	}
+}
+
+func appsOpActionNames() []string {
+	return []string{
+		"create",
+		"update",
+		"html-publish",
+		"init",
+		"git-credential-init",
+		"env-pull",
+		"db-execute",
+		"db-env-create",
+		"release-create",
+		"access-scope-set",
+		"session-create",
+		"chat",
+	}
+}
+
 func queryActions(domain string) []string {
 	switch domain {
+	case "apps":
+		return appsQueryActionNames()
 	case "contact":
 		return []string{"search-user", "get-user"}
 	case "docs":
@@ -55,7 +87,7 @@ func queryActions(domain string) []string {
 	case "okr":
 		return []string{"cycle-list", "cycle-detail", "progress-get", "progress-list"}
 	case "vc", "meetings":
-		return []string{"search", "notes", "recording", "meeting-events"}
+		return []string{"search", "notes", "recording", "meeting-events", "meeting-list-active"}
 	case "calendar":
 		return []string{"agenda", "freebusy", "room-find", "suggestion"}
 	case "tasks":
@@ -75,6 +107,8 @@ func queryActions(domain string) []string {
 
 func opActions(domain string) []string {
 	switch domain {
+	case "apps":
+		return appsOpActionNames()
 	case "drive":
 		return []string{"upload", "download", "import", "export", "export-download", "move", "delete", "replace", "add-comment", "apply-permission", "create-folder", "create-shortcut", "pull", "push", "secure-label-update", "sync", "task-result", "version-delete", "version-get", "version-revert"}
 	case "wiki":
@@ -92,7 +126,7 @@ func opActions(domain string) []string {
 	case "base":
 		return baseOpActionNames()
 	case "docs":
-		return []string{"create", "update", "media-download", "media-insert", "media-preview", "media-upload", "whiteboard-update"}
+		return []string{"create", "update", "media-download", "media-insert", "media-preview", "media-upload", "resource-delete", "resource-download", "resource-update", "whiteboard-update"}
 	case "event":
 		return []string{"consume", "stop"}
 	case "markdown":
@@ -100,7 +134,7 @@ func opActions(domain string) []string {
 	case "minutes":
 		return []string{"download", "speaker-replace", "summary", "todo", "update", "upload", "word-replace"}
 	case "okr":
-		return []string{"progress-create", "progress-update", "progress-delete", "upload-image"}
+		return []string{"batch-create", "indicator-update", "progress-create", "progress-update", "progress-delete", "reorder", "upload-image", "weight"}
 	case "vc", "meetings":
 		return []string{"meeting-join", "meeting-leave", "notes", "recording"}
 	case "sheets":
