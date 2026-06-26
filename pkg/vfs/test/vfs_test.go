@@ -272,7 +272,7 @@ func TestVFSControlQueriesAndStaticViewsBlackbox(t *testing.T) {
 	if _, err := ops.ExecuteOp(context.Background(), "/docs/_ops/resource-update.request.json", []byte(`{"flags":{"doc":"doc_1","type":"cover"}}`)); err != nil {
 		t.Fatalf("ExecuteOp(docs resource-update) error: %v", err)
 	}
-	if got := testutil.JoinArgs(runner.LastArgs); got != "docs resource-update --doc doc_1 --type cover" {
+	if got := testutil.JoinArgs(runner.LastArgs); got != "docs +resource-update --doc doc_1 --type cover" {
 		t.Fatalf("docs resource-update args = %q", got)
 	}
 	if _, err := ops.ExecuteOp(context.Background(), "/okr/_ops/batch-create.request.json", []byte(`{"flags":{"cycle-id":"cycle_1"}}`)); err != nil {

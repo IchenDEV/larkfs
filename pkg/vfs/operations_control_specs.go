@@ -110,7 +110,7 @@ func opActions(domain string) []string {
 	case "apps":
 		return appsOpActionNames()
 	case "drive":
-		return []string{"upload", "download", "import", "export", "export-download", "move", "delete", "replace", "add-comment", "apply-permission", "create-folder", "create-shortcut", "pull", "push", "secure-label-update", "sync", "task-result", "version-delete", "version-get", "version-revert"}
+		return []string{"upload", "download", "import", "export", "export-download", "move", "delete", "replace", "add-comment", "apply-permission", "member-add", "create-folder", "create-shortcut", "pull", "push", "secure-label-update", "sync", "task-result", "version-delete", "version-get", "version-revert"}
 	case "wiki":
 		return []string{"space-create", "delete-space", "member-add", "member-remove", "move", "node-copy", "node-create", "node-delete"}
 	case "im":
@@ -140,7 +140,7 @@ func opActions(domain string) []string {
 	case "sheets":
 		return sheetsOpActionNames()
 	case "slides":
-		return []string{"create", "media-upload", "replace-slide"}
+		return []string{"create", "media-upload", "replace-slide", "screenshot"}
 	case "whiteboard":
 		return []string{"update"}
 	case "contact":

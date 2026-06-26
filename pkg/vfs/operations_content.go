@@ -167,7 +167,7 @@ func staticDomainEntries(domain, token string) doctype.ListResult {
 		"note":       {"detail", "transcript"},
 		"okr":        {"cycles", "objectives", "key-results", "progress", "indicators", "ordering", "weights", "images"},
 		"sheets":     {"workbooks", "cells", "sheets", "dimensions", "filters", "filter-views", "conditional-formats", "dropdowns", "charts", "images", "pivots", "sparklines"},
-		"slides":     {"presentations", "slides", "media"},
+		"slides":     {"presentations", "slides", "media", "screenshots"},
 		"vc":         {"meetings", "active-meetings", "events", "notes", "recordings"},
 		"whiteboard": {"query", "update"},
 		"_system":    {"api", "schema", "auth", "config", "profile", "doctor", "event", "skills", "update"},

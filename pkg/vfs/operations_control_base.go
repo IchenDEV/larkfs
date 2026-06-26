@@ -4,6 +4,8 @@ func baseQueryActionNames() []string {
 	return []string{
 		"data-query",
 		"base-get",
+		"title-resolve",
+		"url-resolve",
 		"base-block-list",
 		"table-list",
 		"table-get",

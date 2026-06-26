@@ -90,9 +90,9 @@ func docsActionSpecs() map[string]actionSpec {
 		"media-insert":      {args: []string{"docs", "+media-insert"}},
 		"media-preview":     {args: []string{"docs", "+media-preview"}},
 		"media-upload":      {args: []string{"docs", "+media-upload"}},
-		"resource-delete":   {args: []string{"docs", "resource-delete"}},
-		"resource-download": {args: []string{"docs", "resource-download"}},
-		"resource-update":   {args: []string{"docs", "resource-update"}},
+		"resource-delete":   {args: []string{"docs", "+resource-delete"}},
+		"resource-download": {args: []string{"docs", "+resource-download"}},
+		"resource-update":   {args: []string{"docs", "+resource-update"}},
 		"whiteboard-update": {args: []string{"docs", "+whiteboard-update"}},
 	}
 }
@@ -108,6 +108,7 @@ func driveActionSpecs() map[string]actionSpec {
 		"delete":              {args: []string{"drive", "+delete"}},
 		"add-comment":         {args: []string{"drive", "+add-comment"}},
 		"apply-permission":    {args: []string{"drive", "+apply-permission"}},
+		"member-add":          {args: []string{"drive", "+member-add"}},
 		"create-folder":       {args: []string{"drive", "+create-folder"}},
 		"create-shortcut":     {args: []string{"drive", "+create-shortcut"}},
 		"pull":                {args: []string{"drive", "+pull"}},
@@ -139,6 +140,7 @@ func slidesActionSpecs() map[string]actionSpec {
 		"create":        {args: []string{"slides", "+create"}},
 		"media-upload":  {args: []string{"slides", "+media-upload"}},
 		"replace-slide": {args: []string{"slides", "+replace-slide"}},
+		"screenshot":    {args: []string{"slides", "+screenshot"}},
 	}
 }
 
