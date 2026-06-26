@@ -92,3 +92,44 @@ func TestVFSControlActionsAcrossDomainsBlackbox(t *testing.T) {
 		}
 	}
 }
+
+func TestVFSControlLatestLarkCLIShortcuts(t *testing.T) {
+	runner := &testutil.Runner{Out: []byte(`{"ok":true}`)}
+	ops := vfs.NewOperations(vfs.OperationsConfig{
+		CLI: runner,
+		Tree: vfs.NewTree([]string{
+			"base", "docs", "drive", "sheets", "slides",
+		}),
+		TTL: time.Minute,
+	})
+
+	cases := []struct {
+		path string
+		want string
+		run  func(context.Context, string, []byte) ([]byte, error)
+	}{
+		{"/base/_queries/title-resolve.request.json", "base +title-resolve", ops.RunQuery},
+		{"/base/_queries/url-resolve.request.json", "base +url-resolve", ops.RunQuery},
+		{"/docs/_ops/resource-download.request.json", "docs +resource-download", ops.ExecuteOp},
+		{"/drive/_ops/member-add.request.json", "drive +member-add", ops.ExecuteOp},
+		{"/sheets/_queries/table-get.request.json", "sheets +table-get", ops.RunQuery},
+		{"/sheets/_ops/workbook-import.request.json", "sheets +workbook-import", ops.ExecuteOp},
+		{"/sheets/_ops/table-put.request.json", "sheets +table-put", ops.ExecuteOp},
+		{"/sheets/_ops/sheet-hide-gridline.request.json", "sheets +sheet-hide-gridline", ops.ExecuteOp},
+		{"/sheets/_ops/sheet-show-gridline.request.json", "sheets +sheet-show-gridline", ops.ExecuteOp},
+		{"/slides/_ops/screenshot.request.json", "slides +screenshot", ops.ExecuteOp},
+	}
+
+	for _, tc := range cases {
+		parent := tc.path[:strings.LastIndex(tc.path, "/")]
+		if _, err := ops.ReadDir(context.Background(), parent); err != nil {
+			t.Fatalf("ReadDir(%s) error: %v", parent, err)
+		}
+		if _, err := tc.run(context.Background(), tc.path, []byte(`{}`)); err != nil {
+			t.Fatalf("%s error: %v", tc.path, err)
+		}
+		if got := testutil.JoinArgs(runner.LastArgs); got != tc.want {
+			t.Fatalf("%s args = %q, want %q", tc.path, got, tc.want)
+		}
+	}
+}
