@@ -115,6 +115,7 @@ func driveActionSpecs() map[string]actionSpec {
 		"push":                {args: []string{"drive", "+push"}},
 		"secure-label-update": {args: []string{"drive", "+secure-label-update"}},
 		"sync":                {args: []string{"drive", "+sync"}},
+		"task_result":         {args: []string{"drive", "+task_result"}},
 		"task-result":         {args: []string{"drive", "+task_result"}},
 		"version-delete":      {args: []string{"drive", "+version-delete"}},
 		"version-get":         {args: []string{"drive", "+version-get"}},
@@ -136,12 +137,7 @@ func okrActionSpecs() map[string]actionSpec {
 }
 
 func slidesActionSpecs() map[string]actionSpec {
-	return map[string]actionSpec{
-		"create":        {args: []string{"slides", "+create"}},
-		"media-upload":  {args: []string{"slides", "+media-upload"}},
-		"replace-slide": {args: []string{"slides", "+replace-slide"}},
-		"screenshot":    {args: []string{"slides", "+screenshot"}},
-	}
+	return plusActionSpecs("slides", slidesOpActionNames())
 }
 
 func taskActionSpecs() map[string]actionSpec {

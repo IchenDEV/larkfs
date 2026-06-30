@@ -7,10 +7,12 @@ func querySpec(domain, action string) (actionSpec, bool) {
 		"attendance": {"user-tasks": {args: []string{"attendance", "user_tasks", "query"}, pageAll: true}},
 		"base":       baseQuerySpecs(),
 		"calendar": {
-			"agenda":     {args: []string{"calendar", "+agenda"}},
-			"freebusy":   {args: []string{"calendar", "+freebusy"}},
-			"room-find":  {args: []string{"calendar", "+room-find"}},
-			"suggestion": {args: []string{"calendar", "+suggestion"}},
+			"agenda":       {args: []string{"calendar", "+agenda"}},
+			"freebusy":     {args: []string{"calendar", "+freebusy"}},
+			"meeting":      {args: []string{"calendar", "+meeting"}},
+			"room-find":    {args: []string{"calendar", "+room-find"}},
+			"search-event": {args: []string{"calendar", "+search-event"}, queryArg: "--query"},
+			"suggestion":   {args: []string{"calendar", "+suggestion"}},
 		},
 		"contact": {
 			"search-user": {args: []string{"contact", "+search-user"}, queryArg: "--query"},
@@ -27,6 +29,7 @@ func querySpec(domain, action string) (actionSpec, bool) {
 		"markdown": {"fetch": {args: []string{"markdown", "+fetch"}}, "diff": {args: []string{"markdown", "+diff"}}},
 		"meetings": vcQuerySpecs(),
 		"minutes": {
+			"detail":   {args: []string{"minutes", "+detail"}},
 			"get":      {args: []string{"minutes", "minutes", "get"}},
 			"search":   {args: []string{"minutes", "+search"}, queryArg: "--query"},
 			"download": {args: []string{"minutes", "+download"}},
@@ -41,6 +44,7 @@ func querySpec(domain, action string) (actionSpec, bool) {
 			"progress-get":  {args: []string{"okr", "+progress-get"}},
 			"progress-list": {args: []string{"okr", "+progress-list"}},
 		},
+		"slides":     slidesQuerySpecs(),
 		"sheets":     sheetsQuerySpecs(),
 		"tasks":      taskQuerySpecs(),
 		"vc":         vcQuerySpecs(),
@@ -61,6 +65,10 @@ func approvalQuerySpecs() map[string]actionSpec {
 
 func appsQuerySpecs() map[string]actionSpec {
 	return plusActionSpecs("apps", appsQueryActionNames())
+}
+
+func slidesQuerySpecs() map[string]actionSpec {
+	return plusActionSpecs("slides", slidesQueryActionNames())
 }
 
 func driveQuerySpecs() map[string]actionSpec {
@@ -129,6 +137,7 @@ func mailQuerySpecs() map[string]actionSpec {
 func vcQuerySpecs() map[string]actionSpec {
 	return map[string]actionSpec{
 		"search":              {args: []string{"vc", "+search"}},
+		"detail":              {args: []string{"vc", "+detail"}},
 		"notes":               {args: []string{"vc", "+notes"}},
 		"recording":           {args: []string{"vc", "+recording"}},
 		"meeting-events":      {args: []string{"vc", "+meeting-events"}},

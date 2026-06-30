@@ -42,7 +42,7 @@
 
 ### Prerequisites
 
-- **[lark-cli](https://github.com/larksuite/cli)** — `npm install -g @larksuite/cli@latest`（控制节点按 `@larksuite/cli` 1.0.58 命令面维护）
+- **[lark-cli](https://github.com/larksuite/cli)** — `npm install -g @larksuite/cli@latest`（控制节点按 `@larksuite/cli` 1.0.60 命令面维护）
 - **FUSE** (仅 FUSE 模式需要):
   - macOS: `brew install macfuse` 或 `brew install macos-fuse-t/homebrew-cask/fuse-t`
   - Linux: `apt install fuse3`

@@ -98,7 +98,7 @@ func TestVFSControlLatestLarkCLIShortcuts(t *testing.T) {
 	ops := vfs.NewOperations(vfs.OperationsConfig{
 		CLI: runner,
 		Tree: vfs.NewTree([]string{
-			"base", "docs", "drive", "sheets", "slides",
+			"apps", "base", "calendar", "docs", "drive", "minutes", "sheets", "slides", "vc",
 		}),
 		TTL: time.Minute,
 	})
@@ -108,16 +108,27 @@ func TestVFSControlLatestLarkCLIShortcuts(t *testing.T) {
 		want string
 		run  func(context.Context, string, []byte) ([]byte, error)
 	}{
+		{"/apps/_queries/git-credential-list.request.json", "apps +git-credential-list", ops.RunQuery},
+		{"/apps/_queries/session-list.request.json", "apps +session-list", ops.RunQuery},
+		{"/apps/_ops/git-credential-remove.request.json", "apps +git-credential-remove", ops.ExecuteOp},
+		{"/apps/_ops/session-stop.request.json", "apps +session-stop", ops.ExecuteOp},
 		{"/base/_queries/title-resolve.request.json", "base +title-resolve", ops.RunQuery},
 		{"/base/_queries/url-resolve.request.json", "base +url-resolve", ops.RunQuery},
+		{"/calendar/_queries/meeting.request.json", "calendar +meeting", ops.RunQuery},
+		{"/calendar/_queries/search-event.request.json", "calendar +search-event", ops.RunQuery},
 		{"/docs/_ops/resource-download.request.json", "docs +resource-download", ops.ExecuteOp},
 		{"/drive/_ops/member-add.request.json", "drive +member-add", ops.ExecuteOp},
+		{"/drive/_ops/task_result.request.json", "drive +task_result", ops.ExecuteOp},
+		{"/minutes/_queries/detail.request.json", "minutes +detail", ops.RunQuery},
 		{"/sheets/_queries/table-get.request.json", "sheets +table-get", ops.RunQuery},
 		{"/sheets/_ops/workbook-import.request.json", "sheets +workbook-import", ops.ExecuteOp},
 		{"/sheets/_ops/table-put.request.json", "sheets +table-put", ops.ExecuteOp},
 		{"/sheets/_ops/sheet-hide-gridline.request.json", "sheets +sheet-hide-gridline", ops.ExecuteOp},
 		{"/sheets/_ops/sheet-show-gridline.request.json", "sheets +sheet-show-gridline", ops.ExecuteOp},
+		{"/slides/_queries/xml-get.request.json", "slides +xml-get", ops.RunQuery},
+		{"/slides/_ops/replace-pages.request.json", "slides +replace-pages", ops.ExecuteOp},
 		{"/slides/_ops/screenshot.request.json", "slides +screenshot", ops.ExecuteOp},
+		{"/vc/_queries/detail.request.json", "vc +detail", ops.RunQuery},
 	}
 
 	for _, tc := range cases {

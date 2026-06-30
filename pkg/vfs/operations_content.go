@@ -155,7 +155,7 @@ func staticDomainEntries(domain, token string) doctype.ListResult {
 	}
 
 	names := map[string][]string{
-		"apps":       {"apps", "html", "local-dev", "database", "releases", "access-scope", "sessions"},
+		"apps":       {"apps", "html", "local-dev", "database", "git-credentials", "releases", "access-scope", "sessions"},
 		"approval":   {"instances", "tasks"},
 		"attendance": {"user-tasks"},
 		"base":       {"bases", "blocks", "tables", "records", "fields", "views", "dashboards", "dashboard-blocks", "forms", "form-questions", "roles", "workflows", "advanced-permissions"},
@@ -163,12 +163,12 @@ func staticDomainEntries(domain, token string) doctype.ListResult {
 		"docs":       {"search", "by-token", "media", "resources", "whiteboard"},
 		"event":      {"list", "schema", "status", "consume"},
 		"markdown":   {"create", "fetch", "diff", "overwrite", "patch"},
-		"minutes":    {"minutes", "media", "search", "speakers"},
+		"minutes":    {"minutes", "detail", "media", "search", "speakers"},
 		"note":       {"detail", "transcript"},
 		"okr":        {"cycles", "objectives", "key-results", "progress", "indicators", "ordering", "weights", "images"},
 		"sheets":     {"workbooks", "cells", "sheets", "dimensions", "filters", "filter-views", "conditional-formats", "dropdowns", "charts", "images", "pivots", "sparklines"},
-		"slides":     {"presentations", "slides", "media", "screenshots"},
-		"vc":         {"meetings", "active-meetings", "events", "notes", "recordings"},
+		"slides":     {"presentations", "slides", "media", "screenshots", "xml", "page-replacements"},
+		"vc":         {"meetings", "details", "active-meetings", "events", "notes", "recordings"},
 		"whiteboard": {"query", "update"},
 		"_system":    {"api", "schema", "auth", "config", "profile", "doctor", "event", "skills", "update"},
 	}
