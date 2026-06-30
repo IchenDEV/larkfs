@@ -34,7 +34,9 @@ func appsQueryActionNames() []string {
 		"release-get",
 		"release-list",
 		"access-scope-get",
+		"git-credential-list",
 		"session-get",
+		"session-list",
 		"session-messages-list",
 	}
 }
@@ -46,13 +48,32 @@ func appsOpActionNames() []string {
 		"html-publish",
 		"init",
 		"git-credential-init",
+		"git-credential-remove",
 		"env-pull",
 		"db-execute",
 		"db-env-create",
 		"release-create",
 		"access-scope-set",
 		"session-create",
+		"session-stop",
 		"chat",
+	}
+}
+
+func slidesQueryActionNames() []string {
+	return []string{
+		"screenshot",
+		"xml-get",
+	}
+}
+
+func slidesOpActionNames() []string {
+	return []string{
+		"create",
+		"media-upload",
+		"replace-pages",
+		"replace-slide",
+		"screenshot",
 	}
 }
 
@@ -81,21 +102,23 @@ func queryActions(domain string) []string {
 	case "markdown":
 		return []string{"fetch", "diff"}
 	case "minutes":
-		return []string{"get", "search", "download"}
+		return []string{"get", "detail", "search", "download"}
 	case "note":
 		return []string{"detail", "transcript"}
 	case "okr":
 		return []string{"cycle-list", "cycle-detail", "progress-get", "progress-list"}
 	case "vc", "meetings":
-		return []string{"search", "notes", "recording", "meeting-events", "meeting-list-active"}
+		return []string{"search", "detail", "notes", "recording", "meeting-events", "meeting-list-active"}
 	case "calendar":
-		return []string{"agenda", "freebusy", "room-find", "suggestion"}
+		return []string{"agenda", "freebusy", "meeting", "room-find", "search-event", "suggestion"}
 	case "tasks":
 		return []string{"get-my-tasks", "get-related-tasks", "search", "tasklist-search"}
 	case "wiki":
 		return []string{"spaces", "nodes", "space-list", "node-list", "node-get", "member-list"}
 	case "sheets":
 		return sheetsQueryActionNames()
+	case "slides":
+		return slidesQueryActionNames()
 	case "whiteboard":
 		return []string{"query"}
 	case "_system":
@@ -110,7 +133,7 @@ func opActions(domain string) []string {
 	case "apps":
 		return appsOpActionNames()
 	case "drive":
-		return []string{"upload", "download", "import", "export", "export-download", "move", "delete", "replace", "add-comment", "apply-permission", "member-add", "create-folder", "create-shortcut", "pull", "push", "secure-label-update", "sync", "task-result", "version-delete", "version-get", "version-revert"}
+		return []string{"upload", "download", "import", "export", "export-download", "move", "delete", "replace", "add-comment", "apply-permission", "member-add", "create-folder", "create-shortcut", "pull", "push", "secure-label-update", "sync", "task_result", "task-result", "version-delete", "version-get", "version-revert"}
 	case "wiki":
 		return []string{"space-create", "delete-space", "member-add", "member-remove", "move", "node-copy", "node-create", "node-delete"}
 	case "im":
@@ -140,7 +163,7 @@ func opActions(domain string) []string {
 	case "sheets":
 		return sheetsOpActionNames()
 	case "slides":
-		return []string{"create", "media-upload", "replace-slide", "screenshot"}
+		return slidesOpActionNames()
 	case "whiteboard":
 		return []string{"update"}
 	case "contact":
